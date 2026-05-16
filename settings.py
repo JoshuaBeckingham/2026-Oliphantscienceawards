@@ -33,12 +33,18 @@ HERO_SIZE = TILE_SIZE - 8   # slightly smaller than a tile, so the grid shows
 KNIGHT_SCALE = 3
 
 # --- The dungeon (procedural generation) ---
-ROCK_DENSITY = 0.16      # chance (0.0-1.0) an inside tile starts as rock
-CLEAR_RADIUS = 3         # tiles kept clear around the heart at the centre
+MAX_ROOMS = 9          # most rooms a dungeon can have (the centre counts)
+ROOM_ATTEMPTS = 80     # how many times to try fitting a new random room
+ROOM_MIN_SIZE = 4      # smallest room width/height, in tiles
+ROOM_MAX_SIZE = 7      # largest room width/height, in tiles
 
-ROCK_COLOUR = (92, 82, 80)        # natural rock — can be mined later
+ROCK_COLOUR = (92, 82, 80)        # solid rock — blocks movement
 ROCK_EDGE_COLOUR = (58, 50, 48)   # darker outline drawn around each rock
-WALL_COLOUR = (140, 124, 104)     # built walls (used from step 3)
+WALL_COLOUR = (140, 124, 104)     # built walls (used in a later step)
+
+DOOR_WOOD_COLOUR = (146, 96, 52)    # the wooden door itself
+DOOR_FRAME_COLOUR = (70, 46, 30)    # dark stone frame around the doorway
+DOOR_HANDLE_COLOUR = (224, 200, 96) # little gold handle on a closed door
 
 # --- The heart (what you defend) ---
 HEART_SIZE = TILE_SIZE - 6

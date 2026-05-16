@@ -27,17 +27,20 @@ class Game:
 
         # Build the dungeon first — the heart and hero are placed inside it.
         self.dungeon = Dungeon()
-        cx, cy = self.dungeon.centre
 
-        # The heart sits on the centre tile of the dungeon.
-        heart_px, heart_py = self.dungeon.tile_centre_pixels(cx, cy)
+        # The heart sits in the middle of the dungeon's central room.
+        heart_px, heart_py = self.dungeon.tile_centre_pixels(
+            *self.dungeon.heart_tile
+        )
         self.heart = Heart(
             heart_px - settings.HEART_SIZE // 2,
             heart_py - settings.HEART_SIZE // 2,
         )
 
-        # The hero starts two tiles from the heart, on open floor.
-        hero_px, hero_py = self.dungeon.tile_centre_pixels(cx - 2, cy)
+        # The hero starts beside the heart, on open floor.
+        hero_px, hero_py = self.dungeon.tile_centre_pixels(
+            *self.dungeon.spawn_tile
+        )
         self.hero = Hero(
             hero_px - settings.HERO_SIZE // 2,
             hero_py - settings.HERO_SIZE // 2,
@@ -64,6 +67,12 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
+                elif event.key == pygame.K_e:
+                    # Open or close a door next to the hero.
+                    self.dungeon.toggle_door_near(
+                        self.hero.rect.centerx,
+                        self.hero.rect.centery,
+                    )
 
     def update(self, dt):
         """Move everything forward by one frame."""
