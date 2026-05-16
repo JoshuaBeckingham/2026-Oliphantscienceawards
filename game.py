@@ -1,0 +1,92 @@
+"""The Game class — it owns the window and runs the main game loop.
+
+Every game is the same three steps repeated very fast:
+    1. handle events  (what did the player press?)
+    2. update         (move everything a tiny bit)
+    3. draw           (paint the new picture)
+Do that 60 times a second and it looks like smooth motion.
+"""
+
+import pygame
+
+import settings
+from entities.hero import Hero
+from entities.heart import Heart
+from world.dungeon import Dungeon
+
+
+class Game:
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode(
+            (settings.SCREEN_WIDTH, settings.SCREEN_HEIGHT)
+        )
+        pygame.display.set_caption(settings.TITLE)
+        self.clock = pygame.time.Clock()
+        self.running = True
+
+        # Build the dungeon first — the heart and hero are placed inside it.
+        self.dungeon = Dungeon()
+        cx, cy = self.dungeon.centre
+
+        # The heart sits on the centre tile of the dungeon.
+        heart_px, heart_py = self.dungeon.tile_centre_pixels(cx, cy)
+        self.heart = Heart(
+            heart_px - settings.HEART_SIZE // 2,
+            heart_py - settings.HEART_SIZE // 2,
+        )
+
+        # The hero starts two tiles from the heart, on open floor.
+        hero_px, hero_py = self.dungeon.tile_centre_pixels(cx - 2, cy)
+        self.hero = Hero(
+            hero_px - settings.HERO_SIZE // 2,
+            hero_py - settings.HERO_SIZE // 2,
+        )
+
+    def run(self):
+        """The main game loop. Keeps going until self.running becomes False."""
+        while self.running:
+            # tick() waits so the game runs at FPS. It returns the number of
+            # milliseconds since the last frame; / 1000 turns it into seconds.
+            dt = self.clock.tick(settings.FPS) / 1000
+
+            self.handle_events()
+            self.update(dt)
+            self.draw()
+
+        pygame.quit()
+
+    def handle_events(self):
+        """Deal with key presses and the window's close button."""
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.running = False
+
+    def update(self, dt):
+        """Move everything forward by one frame."""
+        self.hero.update(dt, self.dungeon)
+
+    def draw(self):
+        """Paint the whole screen for this frame."""
+        self.screen.fill(settings.FLOOR_COLOUR)
+        self._draw_grid()
+        self.dungeon.draw(self.screen)    # rocks on top of the grid
+        self.heart.draw(self.screen)      # the heart at the centre
+        self.hero.draw(self.screen)       # the knight on top of everything
+        pygame.display.flip()   # show the finished picture
+
+    def _draw_grid(self):
+        """Draw faint lines so you can see the dungeon's tile grid."""
+        for x in range(0, settings.SCREEN_WIDTH, settings.TILE_SIZE):
+            pygame.draw.line(
+                self.screen, settings.GRID_COLOUR,
+                (x, 0), (x, settings.SCREEN_HEIGHT),
+            )
+        for y in range(0, settings.SCREEN_HEIGHT, settings.TILE_SIZE):
+            pygame.draw.line(
+                self.screen, settings.GRID_COLOUR,
+                (0, y), (settings.SCREEN_WIDTH, y),
+            )
