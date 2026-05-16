@@ -27,10 +27,9 @@ HERO_SPEED = 180      # pixels moved per second
 HERO_MAX_HP = 100
 HERO_SIZE = TILE_SIZE - 8   # slightly smaller than a tile, so the grid shows
 
-# The knight is drawn from pixel art (see entities/knight_art.py).
-# KNIGHT_SCALE blows the art up: each art pixel becomes a square this big.
-# 2 means the 18x20 art is drawn at 36x40 pixels on screen.
-KNIGHT_SCALE = 3
+# The hero is drawn using the sprite Art/knight.png, scaled to this
+# height in pixels (the width follows automatically to keep its shape).
+HERO_SPRITE_HEIGHT = 72
 
 # --- The dungeon (procedural generation) ---
 MAX_ROOMS = 9          # most rooms a dungeon can have (the centre counts)

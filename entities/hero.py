@@ -2,9 +2,9 @@
 
 import pygame
 
+import assets
 import settings
 from entities.entity import Entity
-from entities import knight_art
 
 
 class Hero(Entity):
@@ -20,14 +20,8 @@ class Hero(Entity):
         )
         self.speed = settings.HERO_SPEED
 
-        # Build the knight's pixel-art picture once, then blow it up to
-        # its on-screen size. transform.scale keeps the pixels crisp.
-        native = knight_art.build_surface()
-        scale = settings.KNIGHT_SCALE
-        self.sprite = pygame.transform.scale(
-            native,
-            (native.get_width() * scale, native.get_height() * scale),
-        )
+        # Load the knight sprite once, scaled to the hero's on-screen size.
+        self.sprite = assets.load_sprite("knight.png", settings.HERO_SPRITE_HEIGHT)
 
     def update(self, dt, dungeon):
         """Read the arrow keys and move the hero, bumping into rocks."""
