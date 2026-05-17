@@ -47,6 +47,14 @@ class ArrowTower:
                 + (self.level - 1) * settings.TOWER_UPGRADE_RANGE)
 
     @property
+    def shots(self):
+        """How many arrows the tower fires at once.
+
+        A fully-upgraded (level 3) tower fires one extra arrow.
+        """
+        return 2 if self.level >= 3 else 1
+
+    @property
     def can_upgrade(self):
         """True if the tower has not yet reached the maximum level."""
         return self.level < settings.TOWER_MAX_LEVEL
@@ -63,40 +71,48 @@ class ArrowTower:
     # --- Shooting -----------------------------------------------------
 
     def update(self, dt, monsters, dungeon):
-        """Count down, then shoot the nearest monster in range and in sight.
+        """Count down, then shoot the nearest monster(s) in range and sight.
 
-        Returns a new Projectile if it shot, or None if it did not.
+        Returns a list of new Projectiles — it may be empty. A level-3
+        tower fires two arrows, so the list can hold two.
         """
         self.cooldown -= dt
         if self.cooldown > 0:
-            return None
+            return []
 
-        target = self._nearest_monster(monsters, dungeon)
-        if target is None:
-            return None
+        targets = self._pick_targets(monsters, dungeon)
+        if not targets:
+            return []
+
+        # If there are fewer monsters than arrows, the spare arrows are
+        # aimed at the nearest monster as well.
+        while len(targets) < self.shots:
+            targets.append(targets[0])
 
         self.cooldown = settings.TOWER_COOLDOWN
-        return Projectile(self.x, self.y, target, self.damage)
+        return [Projectile(self.x, self.y, target, self.damage)
+                for target in targets]
 
-    def _nearest_monster(self, monsters, dungeon):
-        """Find the closest monster in range with a clear line of sight.
+    def _pick_targets(self, monsters, dungeon):
+        """The nearest monsters in range with a clear line of sight.
 
-        A monster behind a wall is skipped, so the tower never shoots
-        an arrow through rock.
+        Returns at most `self.shots` of them. A monster behind a wall is
+        skipped, so the tower never shoots an arrow through rock.
         """
-        closest = None
-        closest_distance = self.range
+        in_sight = []
         for monster in monsters:
             monster_x, monster_y = monster.rect.center
             distance = math.hypot(monster_x - self.x, monster_y - self.y)
-            if distance > closest_distance:
+            if distance > self.range:
                 continue
             if not dungeon.has_line_of_sight(self.x, self.y,
                                              monster_x, monster_y):
                 continue
-            closest = monster
-            closest_distance = distance
-        return closest
+            in_sight.append((distance, monster))
+
+        # Sort nearest-first, then keep only as many as the tower can fire.
+        in_sight.sort(key=lambda pair: pair[0])
+        return [monster for (distance, monster) in in_sight[:self.shots]]
 
     # --- Drawing ------------------------------------------------------
 

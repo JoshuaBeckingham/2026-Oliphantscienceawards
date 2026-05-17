@@ -198,11 +198,10 @@ class Game:
         for monster in self.monsters:
             monster.update(dt, self.dungeon, self.heart)
 
-        # Towers shoot — each one may fire a new arrow this frame.
+        # Towers shoot — each one may fire one or more arrows this frame.
         for tower in self.towers:
-            arrow = tower.update(dt, self.monsters, self.dungeon)
-            if arrow is not None:
-                self.projectiles.append(arrow)
+            self.projectiles.extend(
+                tower.update(dt, self.monsters, self.dungeon))
 
         # Traps strike monsters standing on them.
         for trap in self.traps:
