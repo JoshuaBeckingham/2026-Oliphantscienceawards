@@ -47,7 +47,7 @@ DOOR_HANDLE_COLOUR = (224, 200, 96) # little gold handle on a closed door
 
 # --- The heart (what you defend) ---
 HEART_SIZE = TILE_SIZE - 6
-HEART_MAX_HP = 500
+HEART_MAX_HP = 1000
 HEART_COLOUR = (214, 48, 72)          # bright red heart
 HEART_SHINE_COLOUR = (255, 150, 165)  # small highlight on the heart
 
