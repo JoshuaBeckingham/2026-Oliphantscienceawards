@@ -5,6 +5,8 @@ they are tougher (more HP). The monsters of a wave are spawned a few at a
 time, so they trickle into the dungeon instead of appearing in one clump.
 """
 
+import random
+
 import settings
 from entities.monster import Monster
 from world import pathfinding
@@ -18,6 +20,20 @@ class WaveManager:
         self.wave_number = 0     # 0 means no wave has started yet
         self.to_spawn = 0        # how many monsters still to appear this wave
         self.spawn_timer = 0.0   # seconds until the next monster appears
+
+        # Which room the next wave's monsters come from. Picked fresh each
+        # wave so they arrive from a different direction every time.
+        self.spawn_tile = None
+        self.choose_spawn_room()
+
+    def choose_spawn_room(self):
+        """Pick the room the next wave's monsters will come from.
+
+        A different room from the last wave, whenever there is a choice.
+        """
+        options = self.dungeon.spawn_tiles
+        fresh = [tile for tile in options if tile != self.spawn_tile]
+        self.spawn_tile = random.choice(fresh if fresh else options)
 
     def monsters_in_wave(self, wave):
         """How many monsters wave number `wave` contains."""
@@ -51,7 +67,7 @@ class WaveManager:
 
     def _make_monster(self):
         """Create one monster at the spawn point, with a path to the heart."""
-        spawn_tile = self.dungeon.monster_spawn_tile
+        spawn_tile = self.spawn_tile
         spawn_x, spawn_y = self.dungeon.tile_centre_pixels(*spawn_tile)
         hp = self.monster_hp_for_wave(self.wave_number)
         monster = Monster(

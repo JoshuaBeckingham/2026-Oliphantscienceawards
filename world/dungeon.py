@@ -73,16 +73,13 @@ class Dungeon:
         hx, hy = self.heart_tile
         self.spawn_tile = (hx - 2, hy)
 
-        # Monsters spawn in the room that is farthest from the heart, so
-        # they have a proper journey across the dungeon.
-        if len(self.rooms) > 1:
-            farthest = max(
-                self.rooms[1:],
-                key=lambda r: _tile_distance_squared(r.centre, self.heart_tile),
-            )
-            self.monster_spawn_tile = farthest.centre
-        else:
-            self.monster_spawn_tile = (self.rooms[0].x, self.rooms[0].y)
+        # Monsters spawn from the rooms around the dungeon — every room
+        # except the heart's central room. Each wave picks one of these,
+        # so monsters can arrive from a different direction every time.
+        self.spawn_tiles = [room.centre for room in self.rooms[1:]]
+        if not self.spawn_tiles:
+            # Only the central room exists — spawn from a corner of it.
+            self.spawn_tiles = [(self.rooms[0].x, self.rooms[0].y)]
 
     # --- Building the map ---------------------------------------------
 

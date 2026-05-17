@@ -185,6 +185,10 @@ class Game:
         self.build_timer = settings.WAVE_BUILD_TIME
         self.projectiles = []   # any leftover arrows are cleared
 
+        # Decide which room the next wave comes from, so the player can
+        # see the marker and build towers to meet it.
+        self.wave_manager.choose_spawn_room()
+
     # --- Building towers ----------------------------------------------
 
     def _tower_at(self, tile_x, tile_y):
@@ -265,6 +269,7 @@ class Game:
         self.hero.draw(self.screen)       # the knight on top of everything
 
         if self.phase == PHASE_BUILD and not self.game_over:
+            self._draw_spawn_marker()
             for tower in self.towers:
                 tower.draw_range(self.screen)
             self._draw_placement_preview()
@@ -275,6 +280,26 @@ class Game:
             self._draw_game_over()
 
         pygame.display.flip()   # show the finished picture
+
+    def _draw_spawn_marker(self):
+        """Mark the room the next wave's monsters will come from."""
+        ts = settings.TILE_SIZE
+        tile_x, tile_y = self.wave_manager.spawn_tile
+        centre = self.dungeon.tile_centre_pixels(tile_x, tile_y)
+
+        # A translucent red disc filling the spawn tile.
+        marker = pygame.Surface((ts, ts), pygame.SRCALPHA)
+        pygame.draw.circle(marker, settings.SPAWN_MARKER_COLOUR,
+                           (ts // 2, ts // 2), ts // 2)
+        self.screen.blit(marker, (tile_x * ts, tile_y * ts))
+
+        # A bright ring around it, with a label floating above.
+        pygame.draw.circle(self.screen, settings.SPAWN_RING_COLOUR,
+                           centre, ts // 2, 3)
+        label = self.hud_font.render("Monsters spawn here", True,
+                                     settings.SPAWN_RING_COLOUR)
+        label_rect = label.get_rect(center=(centre[0], centre[1] - ts))
+        self.screen.blit(label, label_rect)
 
     def _draw_placement_preview(self):
         """Highlight the tile under the mouse — green if a tower can go there."""

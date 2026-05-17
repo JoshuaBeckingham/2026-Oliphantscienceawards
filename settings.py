@@ -123,6 +123,10 @@ PLACE_OK_COLOUR = (90, 200, 90, 70)      # a tower can go here
 PLACE_BAD_COLOUR = (200, 70, 70, 70)     # a tower cannot go here
 SELL_HIGHLIGHT_COLOUR = (230, 170, 60, 90)  # hovering a tower (right-click sells)
 
+# Marker showing which room the next wave's monsters will come from.
+SPAWN_MARKER_COLOUR = (220, 60, 60, 70)   # translucent disc (R,G,B,alpha)
+SPAWN_RING_COLOUR = (235, 90, 90)         # bright ring and label
+
 # --- Projectiles (tower arrows) ---
 PROJECTILE_SPEED = 420         # pixels per second
 PROJECTILE_LENGTH = 14         # length of the arrow streak
