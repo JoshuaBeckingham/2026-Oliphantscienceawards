@@ -102,13 +102,21 @@ WAVE_GOLD_PER_WAVE = 10
 # --- Arrow tower (a buildable) ---
 TOWER_COST = 50                # gold to place one tower
 TOWER_SELL_FRACTION = 0.7      # fraction of the cost refunded when sold
-TOWER_RANGE = 160              # pixels — how far the tower can shoot
-TOWER_DAMAGE = 8
+TOWER_RANGE = 160              # pixels — how far a level-1 tower can shoot
+TOWER_DAMAGE = 8               # damage of a level-1 tower's arrow
 TOWER_COOLDOWN = 0.7           # seconds between shots
+
+# Upgrading a tower (left-click an existing tower):
+TOWER_MAX_LEVEL = 3
+TOWER_UPGRADE_COST = 40        # cost = TOWER_UPGRADE_COST * the tower's level
+TOWER_UPGRADE_DAMAGE = 6       # extra arrow damage gained per level
+TOWER_UPGRADE_RANGE = 30       # extra range (pixels) gained per level
+
 TOWER_BASE_COLOUR = (95, 90, 105)        # stone body of the tower
 TOWER_TRIM_COLOUR = (145, 140, 160)      # lighter edge
 TOWER_TURRET_COLOUR = (170, 120, 60)     # the wooden turret on top
 TOWER_RANGE_COLOUR = (120, 160, 220, 40) # faint range circle (R,G,B,alpha)
+TOWER_PIP_COLOUR = (245, 230, 150)       # level dots drawn on the tower
 
 # Tile highlight shown under the mouse while building.
 PLACE_OK_COLOUR = (90, 200, 90, 70)      # a tower can go here

@@ -16,12 +16,12 @@ import settings
 class Projectile:
     """An arrow flying from a tower toward one monster."""
 
-    def __init__(self, x, y, target):
+    def __init__(self, x, y, target, damage):
         self.x = float(x)
         self.y = float(y)
         self.target = target          # the monster this arrow chases
         self.speed = settings.PROJECTILE_SPEED
-        self.damage = settings.TOWER_DAMAGE
+        self.damage = damage          # how hard it hits — set by the tower
         self.done = False             # True once it has hit or fizzled
 
         # Direction of travel, as a unit vector — used for drawing.

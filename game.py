@@ -116,9 +116,9 @@ class Game:
                         self._start_defense()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if not self.game_over:
-                    if event.button == 1:        # left click — buy a tower
-                        self._try_place_tower(event.pos)
-                    elif event.button == 3:      # right click — sell a tower
+                    if event.button == 1:    # left click — build or upgrade
+                        self._left_click(event.pos)
+                    elif event.button == 3:  # right click — sell a tower
                         self._try_sell_tower(event.pos)
 
     def update(self, dt):
@@ -206,14 +206,31 @@ class Game:
             return False
         return self.economy.can_afford(settings.TOWER_COST)
 
-    def _try_place_tower(self, mouse_pos):
-        """Place a tower under the mouse, if that tile is allowed."""
+    def _left_click(self, mouse_pos):
+        """Left-click during build: upgrade the tower here, or build one."""
+        if self.phase != PHASE_BUILD:
+            return
         tile_x = mouse_pos[0] // settings.TILE_SIZE
         tile_y = mouse_pos[1] // settings.TILE_SIZE
+        tower = self._tower_at(tile_x, tile_y)
+        if tower is not None:
+            self._try_upgrade_tower(tower)
+        else:
+            self._try_place_tower(tile_x, tile_y)
+
+    def _try_place_tower(self, tile_x, tile_y):
+        """Build a new tower on the tile, if that is allowed."""
         if not self._can_place_tower(tile_x, tile_y):
             return
         self.economy.spend(settings.TOWER_COST)
         self.towers.append(ArrowTower(tile_x, tile_y))
+
+    def _try_upgrade_tower(self, tower):
+        """Upgrade a tower one level, if it can be — and can be afforded."""
+        if not tower.can_upgrade:
+            return
+        if self.economy.spend(tower.upgrade_cost):
+            tower.upgrade()
 
     def _try_sell_tower(self, mouse_pos):
         """Sell the tower under the mouse, refunding part of its cost."""
@@ -283,13 +300,17 @@ class Game:
             next_wave = self.wave_manager.wave_number + 1
             self._blit_text(f"Wave {next_wave} - get ready", (16, 46))
             self._blit_text(
-                f"Left-click: build Arrow Tower ({settings.TOWER_COST}g)",
+                f"Left-click: build tower ({settings.TOWER_COST}g), "
+                f"or upgrade the tower clicked",
                 (16, 80),
             )
             self._blit_text(
                 f"Right-click a tower: sell it ({self._tower_refund()}g back)",
                 (16, 114),
             )
+            tower_info = self._hovered_tower_info()
+            if tower_info is not None:
+                self._blit_text(tower_info, (16, 148))
             seconds = math.ceil(self.build_timer)
             prompt = f"Starts in {seconds}s   (press Enter to start now)"
             surface = self.hud_font.render(prompt, True,
@@ -305,6 +326,18 @@ class Game:
         """Draw a line of HUD text at the given screen position."""
         surface = self.hud_font.render(text, True, settings.HUD_TEXT_COLOUR)
         self.screen.blit(surface, position)
+
+    def _hovered_tower_info(self):
+        """A line of text describing the tower under the mouse, or None."""
+        ts = settings.TILE_SIZE
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        tower = self._tower_at(mouse_x // ts, mouse_y // ts)
+        if tower is None:
+            return None
+        if tower.can_upgrade:
+            return (f"Tower level {tower.level}  -  "
+                    f"upgrade for {tower.upgrade_cost}g")
+        return f"Tower level {tower.level}  (fully upgraded)"
 
     def _draw_game_over(self):
         """Cover the screen with a big 'GAME OVER' message."""
