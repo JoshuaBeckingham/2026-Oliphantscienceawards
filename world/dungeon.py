@@ -8,6 +8,7 @@ This is PROCEDURAL GENERATION. The algorithm:
 Every run gives a different dungeon.
 """
 
+import math
 import random
 
 import pygame
@@ -200,6 +201,29 @@ class Dungeon:
         """The pixel position of the centre of tile (tx, ty)."""
         ts = settings.TILE_SIZE
         return (tx * ts + ts // 2, ty * ts + ts // 2)
+
+    def is_solid_at(self, px, py):
+        """True if the tile at pixel point (px, py) blocks sight (rock/wall)."""
+        tx = int(px // settings.TILE_SIZE)
+        ty = int(py // settings.TILE_SIZE)
+        return tile.blocks_sight(self.get_tile(tx, ty))
+
+    def has_line_of_sight(self, x1, y1, x2, y2):
+        """True if no rock or wall lies on the straight line between two
+        pixel points. Towers use this so they cannot shoot through walls.
+        """
+        gap_x = x2 - x1
+        gap_y = y2 - y1
+        distance = math.hypot(gap_x, gap_y)
+        if distance == 0:
+            return True
+        # Check several points along the line — a few times per tile.
+        samples = int(distance / (settings.TILE_SIZE / 4))
+        for i in range(1, samples):
+            along = i / samples
+            if self.is_solid_at(x1 + gap_x * along, y1 + gap_y * along):
+                return False
+        return True
 
     # --- Doors --------------------------------------------------------
 

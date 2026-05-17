@@ -175,7 +175,7 @@ class Game:
 
         # Towers shoot — each one may fire a new arrow this frame.
         for tower in self.towers:
-            arrow = tower.update(dt, self.monsters)
+            arrow = tower.update(dt, self.monsters, self.dungeon)
             if arrow is not None:
                 self.projectiles.append(arrow)
 
@@ -185,7 +185,7 @@ class Game:
 
         # Move the arrows; they damage monsters when they land.
         for projectile in self.projectiles:
-            projectile.update(dt)
+            projectile.update(dt, self.dungeon)
         self.projectiles = [p for p in self.projectiles if not p.done]
 
         # Forget any monsters that have been killed.

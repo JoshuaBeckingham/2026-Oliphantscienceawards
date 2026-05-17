@@ -17,6 +17,10 @@ BLOCKING = {ROCK, WALL, DOOR_CLOSED}
 # monsters head straight for the heart and push through any door.
 PATH_BLOCKING = {ROCK, WALL}
 
+# Tiles that block a tower's line of sight, so arrows cannot fly through
+# rock or walls. (Doorways are gaps — arrows can pass through them.)
+SIGHT_BLOCKING = {ROCK, WALL}
+
 # The two states a door can be in.
 DOORS = {DOOR_CLOSED, DOOR_OPEN}
 
@@ -29,6 +33,11 @@ def blocks_movement(tile_type):
 def blocks_path(tile_type):
     """True if monster pathfinding must route around this tile."""
     return tile_type in PATH_BLOCKING
+
+
+def blocks_sight(tile_type):
+    """True if this tile blocks a tower's line of sight (and its arrows)."""
+    return tile_type in SIGHT_BLOCKING
 
 
 def is_door(tile_type):

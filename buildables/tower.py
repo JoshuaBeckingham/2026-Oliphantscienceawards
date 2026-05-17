@@ -62,8 +62,8 @@ class ArrowTower:
 
     # --- Shooting -----------------------------------------------------
 
-    def update(self, dt, monsters):
-        """Count down, then shoot the nearest monster in range.
+    def update(self, dt, monsters, dungeon):
+        """Count down, then shoot the nearest monster in range and in sight.
 
         Returns a new Projectile if it shot, or None if it did not.
         """
@@ -71,23 +71,31 @@ class ArrowTower:
         if self.cooldown > 0:
             return None
 
-        target = self._nearest_monster(monsters)
+        target = self._nearest_monster(monsters, dungeon)
         if target is None:
             return None
 
         self.cooldown = settings.TOWER_COOLDOWN
         return Projectile(self.x, self.y, target, self.damage)
 
-    def _nearest_monster(self, monsters):
-        """Find the closest monster within range, or None if there is none."""
+    def _nearest_monster(self, monsters, dungeon):
+        """Find the closest monster in range with a clear line of sight.
+
+        A monster behind a wall is skipped, so the tower never shoots
+        an arrow through rock.
+        """
         closest = None
         closest_distance = self.range
         for monster in monsters:
             monster_x, monster_y = monster.rect.center
             distance = math.hypot(monster_x - self.x, monster_y - self.y)
-            if distance <= closest_distance:
-                closest = monster
-                closest_distance = distance
+            if distance > closest_distance:
+                continue
+            if not dungeon.has_line_of_sight(self.x, self.y,
+                                             monster_x, monster_y):
+                continue
+            closest = monster
+            closest_distance = distance
         return closest
 
     # --- Drawing ------------------------------------------------------

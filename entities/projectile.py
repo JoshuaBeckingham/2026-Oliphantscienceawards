@@ -40,7 +40,7 @@ class Projectile:
             self.dir_y = gap_y / distance
         return distance
 
-    def update(self, dt):
+    def update(self, dt, dungeon):
         """Fly toward the target; deal damage once it is reached."""
         # If the monster is already dead, the arrow has nothing to hit.
         if not self.target.is_alive:
@@ -53,9 +53,14 @@ class Projectile:
             # The arrow has caught up with the monster.
             self.target.take_damage(self.damage)
             self.done = True
-        else:
-            self.x += self.dir_x * step
-            self.y += self.dir_y * step
+            return
+
+        self.x += self.dir_x * step
+        self.y += self.dir_y * step
+
+        # If the arrow has flown into a wall, it stops there.
+        if dungeon.is_solid_at(self.x, self.y):
+            self.done = True
 
     def draw(self, surface):
         """Draw the arrow as a short bright streak."""
