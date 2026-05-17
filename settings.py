@@ -80,3 +80,14 @@ HP_BAR_FILL_COLOUR = (70, 200, 80)    # remaining health
 
 # The "GAME OVER" message shown when the heart is destroyed.
 GAME_OVER_COLOUR = (235, 60, 60)
+
+# --- Waves ---
+# Monsters arrive in waves. Each wave is bigger and tougher than the last.
+WAVE_BASE_MONSTERS = 3      # how many monsters wave 1 has
+WAVE_MONSTER_STEP = 2       # extra monsters each wave (3, 5, 7, 9, ...)
+WAVE_HP_STEP = 10           # extra HP each monster gains per wave
+WAVE_SPAWN_GAP = 0.8        # seconds between each monster appearing
+WAVE_BUILD_TIME = 8.0       # seconds of calm before a wave begins
+
+# On-screen wave / phase text.
+HUD_TEXT_COLOUR = (235, 235, 245)

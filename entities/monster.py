@@ -16,12 +16,13 @@ from entities.entity import Entity
 class Monster(Entity):
     """A monster that follows a pre-planned path of tiles to the heart."""
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, max_hp=settings.MONSTER_MAX_HP):
+        # max_hp can be raised for later waves, to make monsters tougher.
         super().__init__(
             x, y,
             settings.MONSTER_SIZE,
             settings.MONSTER_COLOUR,
-            settings.MONSTER_MAX_HP,
+            max_hp,
         )
         self.speed = settings.MONSTER_SPEED
         self.path = []          # list of (tile_x, tile_y) to walk through
