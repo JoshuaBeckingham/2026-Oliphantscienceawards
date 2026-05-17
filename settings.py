@@ -168,7 +168,7 @@ TRAP_FLASH_TIME = 0.15         # how long the spikes look "struck"
 
 # Upgrading a trap (left-click an existing trap):
 TRAP_MAX_LEVEL = 3
-TRAP_UPGRADE_COST = 25         # cost = TRAP_UPGRADE_COST * the trap's level
+TRAP_UPGRADE_COST = 35         # cost = TRAP_UPGRADE_COST * the trap's level
 TRAP_UPGRADE_DAMAGE = 6        # extra damage gained per level
 TRAP_UPGRADE_SPEED = 0.12      # seconds shaved off the cooldown per level
 TRAP_BASE_COLOUR = (66, 60, 56)           # the trap's recessed base
