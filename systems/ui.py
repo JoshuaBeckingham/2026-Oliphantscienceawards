@@ -116,19 +116,21 @@ class SettingsMenu:
             settings.SCREEN_WIDTH - size - margin, margin, size, size)
 
         # The pause panel, centred on the screen.
-        panel_w, panel_h = 440, 320
+        panel_w, panel_h = 440, 392
         panel_x = (settings.SCREEN_WIDTH - panel_w) // 2
         panel_y = (settings.SCREEN_HEIGHT - panel_h) // 2
         self.panel_rect = pygame.Rect(panel_x, panel_y, panel_w, panel_h)
 
-        # Three buttons, stacked inside the panel.
+        # Four buttons, stacked inside the panel.
         button_w, button_h = 360, 56
         button_x = panel_x + (panel_w - button_w) // 2
         self.resume_rect = pygame.Rect(button_x, panel_y + 92,
                                        button_w, button_h)
         self.grid_rect = pygame.Rect(button_x, panel_y + 164,
                                      button_w, button_h)
-        self.quit_rect = pygame.Rect(button_x, panel_y + 236,
+        self.ranges_rect = pygame.Rect(button_x, panel_y + 236,
+                                       button_w, button_h)
+        self.quit_rect = pygame.Rect(button_x, panel_y + 308,
                                      button_w, button_h)
 
     def handle_click(self, pos, game):
@@ -147,6 +149,8 @@ class SettingsMenu:
             game.paused = False
         elif self.grid_rect.collidepoint(pos):
             game.show_grid = not game.show_grid
+        elif self.ranges_rect.collidepoint(pos):
+            game.show_ranges = not game.show_ranges
         elif self.quit_rect.collidepoint(pos):
             game.running = False
         return True
@@ -193,6 +197,9 @@ class SettingsMenu:
         self._draw_button(surface, self.resume_rect, "Resume", mouse_pos)
         grid_text = "Tile grid: ON" if game.show_grid else "Tile grid: OFF"
         self._draw_button(surface, self.grid_rect, grid_text, mouse_pos)
+        ranges_text = ("Tower ranges: ON" if game.show_ranges
+                       else "Tower ranges: OFF")
+        self._draw_button(surface, self.ranges_rect, ranges_text, mouse_pos)
         self._draw_button(surface, self.quit_rect, "Quit game", mouse_pos)
 
     def _draw_button(self, surface, rect, text, mouse_pos):

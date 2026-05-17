@@ -77,6 +77,7 @@ class Game:
         # Player options the settings menu can change.
         self.paused = False
         self.show_grid = True
+        self.show_ranges = True
 
         # The game starts in the BUILD phase, counting down to wave 1.
         self.phase = settings.PHASE_BUILD
@@ -325,8 +326,9 @@ class Game:
 
         if self.phase == settings.PHASE_BUILD and not self.game_over:
             self._draw_spawn_marker()
-            for tower in self.towers:
-                tower.draw_range(self.screen)
+            if self.show_ranges:
+                for tower in self.towers:
+                    tower.draw_range(self.screen)
             self._draw_placement_preview()
 
         self.hud.draw(self.screen, self)
