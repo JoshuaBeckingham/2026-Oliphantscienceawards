@@ -1,8 +1,13 @@
-"""The Monster — a creature that walks through the dungeon to the heart.
+"""Monsters — creatures that walk to the heart and attack it.
 
-For now there is just one kind of monster. It is given a PATH (a list of
-tiles found by A* pathfinding) and follows it waypoint by waypoint. Once
-it arrives at the heart, it attacks the heart over and over.
+`Monster` is the BASE class: it holds the shared behaviour (following an
+A* path, then attacking the heart). `Goblin` and `Orc` INHERIT from it
+and just fill in their own stats — size, speed, HP and colour. Writing
+the walking-and-attacking code once, here, is what inheritance is for.
+
+A monster does not work out collisions like the hero does. Instead it is
+given a PATH (a list of tiles) and simply follows it, waypoint by
+waypoint.
 """
 
 import math
@@ -14,17 +19,12 @@ from entities.entity import Entity
 
 
 class Monster(Entity):
-    """A monster that follows a pre-planned path of tiles to the heart."""
+    """Base class for every monster. Follows a path, then attacks the heart."""
 
-    def __init__(self, x, y, max_hp=settings.MONSTER_MAX_HP):
-        # max_hp can be raised for later waves, to make monsters tougher.
-        super().__init__(
-            x, y,
-            settings.MONSTER_SIZE,
-            settings.MONSTER_COLOUR,
-            max_hp,
-        )
-        self.speed = settings.MONSTER_SPEED
+    def __init__(self, x, y, size, max_hp, speed, colour, dark_colour):
+        super().__init__(x, y, size, colour, max_hp)
+        self.speed = speed
+        self.dark_colour = dark_colour       # outline / shading colour
         self.path = []          # list of (tile_x, tile_y) to walk through
         self.path_index = 0     # which waypoint we are heading to now
         self.attack_timer = 0.0  # counts down to the next hit on the heart
@@ -79,15 +79,14 @@ class Monster(Entity):
             self.attack_timer = settings.MONSTER_ATTACK_COOLDOWN
 
     def draw(self, surface):
-        """Draw the monster as a round green creature with glowing eyes."""
+        """Draw the monster as a round creature with glowing eyes."""
         centre = (round(self.x + self.size / 2),
                   round(self.y + self.size / 2))
         radius = self.size // 2
 
         # Body, with a darker outline.
-        pygame.draw.circle(surface, settings.MONSTER_COLOUR, centre, radius)
-        pygame.draw.circle(surface, settings.MONSTER_DARK_COLOUR, centre,
-                           radius, 2)
+        pygame.draw.circle(surface, self.colour, centre, radius)
+        pygame.draw.circle(surface, self.dark_colour, centre, radius, 2)
 
         # Two small eyes near the top of the body.
         eye_offset_x = radius // 3
@@ -100,3 +99,31 @@ class Monster(Entity):
 
         # A health bar floats above the monster once it has been hurt.
         self.draw_health_bar(surface)
+
+
+class Goblin(Monster):
+    """The basic monster — small, fast and weak."""
+
+    def __init__(self, x, y, max_hp):
+        super().__init__(
+            x, y,
+            settings.GOBLIN_SIZE,
+            max_hp,
+            settings.GOBLIN_SPEED,
+            settings.GOBLIN_COLOUR,
+            settings.GOBLIN_DARK_COLOUR,
+        )
+
+
+class Orc(Monster):
+    """A bigger monster — slow, but tough. Appears in later waves."""
+
+    def __init__(self, x, y, max_hp):
+        super().__init__(
+            x, y,
+            settings.ORC_SIZE,
+            max_hp,
+            settings.ORC_SPEED,
+            settings.ORC_COLOUR,
+            settings.ORC_DARK_COLOUR,
+        )

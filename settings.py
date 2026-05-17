@@ -52,12 +52,23 @@ HEART_COLOUR = (214, 48, 72)          # bright red heart
 HEART_SHINE_COLOUR = (255, 150, 165)  # small highlight on the heart
 
 # --- Monsters ---
-MONSTER_SIZE = TILE_SIZE - 16   # smaller than a tile, so it fits corridors
-MONSTER_SPEED = 90              # pixels per second (slower than the hero)
-MONSTER_MAX_HP = 30
-MONSTER_COLOUR = (110, 170, 70)       # goblin green
-MONSTER_DARK_COLOUR = (60, 100, 40)   # darker outline / shading
-MONSTER_EYE_COLOUR = (240, 240, 120)  # glowing eyes
+# Every monster type has glowing eyes of the same colour.
+MONSTER_EYE_COLOUR = (240, 240, 120)
+
+# Goblin — the basic monster: fast and weak.
+GOBLIN_SIZE = TILE_SIZE - 16    # smaller than a tile, so it fits corridors
+GOBLIN_SPEED = 90               # pixels per second
+GOBLIN_MAX_HP = 30
+GOBLIN_COLOUR = (110, 170, 70)        # goblin green
+GOBLIN_DARK_COLOUR = (60, 100, 40)    # darker outline / shading
+
+# Orc — slow but tough. Joins the waves from ORC_FIRST_WAVE onward.
+ORC_SIZE = TILE_SIZE - 4
+ORC_SPEED = 52
+ORC_MAX_HP = 95
+ORC_COLOUR = (160, 95, 72)            # muddy orc red-brown
+ORC_DARK_COLOUR = (96, 54, 42)
+ORC_FIRST_WAVE = 3                    # the wave orcs start appearing
 
 # --- Combat ---
 # The hero's sword swing (press Space).
@@ -89,8 +100,14 @@ WAVE_HP_STEP = 10           # extra HP each monster gains per wave
 WAVE_SPAWN_GAP = 0.8        # seconds between each monster appearing
 WAVE_BUILD_TIME = 8.0       # seconds of calm before a wave begins
 
-# On-screen wave / phase text.
+# --- Game phases (the state machine) ---
+PHASE_BUILD = "build"
+PHASE_DEFENSE = "defense"
+
+# The HUD (heads-up display) drawn at the top of the screen.
 HUD_TEXT_COLOUR = (235, 235, 245)
+HUD_PANEL_COLOUR = (18, 18, 26, 150)     # translucent strip behind the text
+HUD_SELECTED_COLOUR = (245, 220, 120)    # highlights the chosen buildable
 
 # --- Gold (the economy) ---
 STARTING_GOLD = 80
@@ -131,3 +148,12 @@ SPAWN_RING_COLOUR = (235, 90, 90)         # bright ring and label
 PROJECTILE_SPEED = 420         # pixels per second
 PROJECTILE_LENGTH = 14         # length of the arrow streak
 PROJECTILE_COLOUR = (245, 230, 150)
+
+# --- Spike trap (a buildable) ---
+TRAP_COST = 30
+TRAP_DAMAGE = 10
+TRAP_COOLDOWN = 0.6            # seconds between the spikes striking
+TRAP_FLASH_TIME = 0.15         # how long the spikes look "struck"
+TRAP_BASE_COLOUR = (66, 60, 56)           # the trap's recessed base
+TRAP_SPIKE_COLOUR = (180, 186, 196)       # the spikes at rest
+TRAP_SPIKE_FIRED_COLOUR = (240, 120, 90)  # the spikes the moment they strike
