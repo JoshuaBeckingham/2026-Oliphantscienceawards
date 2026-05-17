@@ -157,3 +157,13 @@ TRAP_FLASH_TIME = 0.15         # how long the spikes look "struck"
 TRAP_BASE_COLOUR = (66, 60, 56)           # the trap's recessed base
 TRAP_SPIKE_COLOUR = (180, 186, 196)       # the spikes at rest
 TRAP_SPIKE_FIRED_COLOUR = (240, 120, 90)  # the spikes the moment they strike
+
+# --- Settings / pause menu ---
+GEAR_COLOUR = (212, 214, 224)             # the gear icon, top-right
+GEAR_DARK_COLOUR = (120, 122, 138)        # the gear's centre hole
+MENU_OVERLAY_COLOUR = (8, 8, 14, 180)     # dims the game while paused
+MENU_PANEL_COLOUR = (40, 40, 54)          # the pause panel background
+MENU_BORDER_COLOUR = (122, 124, 146)      # panel and button outlines
+MENU_BUTTON_COLOUR = (62, 62, 82)         # a button at rest
+MENU_BUTTON_HOVER_COLOUR = (94, 94, 122)  # a button under the mouse
+MENU_TEXT_COLOUR = (236, 236, 246)

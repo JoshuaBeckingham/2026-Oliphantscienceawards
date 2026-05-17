@@ -21,7 +21,7 @@ from world.dungeon import Dungeon
 from world import tile
 from systems.waves import WaveManager
 from systems.economy import Economy
-from systems.ui import HUD
+from systems.ui import HUD, SettingsMenu
 from buildables.tower import ArrowTower
 from buildables.trap import SpikeTrap
 
@@ -69,9 +69,14 @@ class Game:
         # Which buildable a left-click will place ("tower" or "trap").
         self.selected_buildable = "tower"
 
-        # The player's gold, and the heads-up display.
+        # The player's gold, the heads-up display and the settings menu.
         self.economy = Economy()
         self.hud = HUD()
+        self.settings_menu = SettingsMenu()
+
+        # Player options the settings menu can change.
+        self.paused = False
+        self.show_grid = True
 
         # The game starts in the BUILD phase, counting down to wave 1.
         self.phase = settings.PHASE_BUILD
@@ -102,6 +107,8 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
+                elif self.paused or self.game_over:
+                    pass   # other keys do nothing while paused / game over
                 elif event.key == pygame.K_e:
                     # Open or close a door next to the hero.
                     self.dungeon.toggle_door_near(
@@ -110,23 +117,26 @@ class Game:
                     )
                 elif event.key == pygame.K_RETURN:
                     # Skip the rest of the build countdown.
-                    if self.phase == settings.PHASE_BUILD and not self.game_over:
+                    if self.phase == settings.PHASE_BUILD:
                         self._start_defense()
                 elif event.key == pygame.K_1:
                     self.selected_buildable = "tower"
                 elif event.key == pygame.K_2:
                     self.selected_buildable = "trap"
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if not self.game_over:
-                    if event.button == 1:    # left click — build or upgrade
-                        self._left_click(event.pos)
-                    elif event.button == 3:  # right click — sell
+                if event.button == 1:
+                    # The settings menu gets first look at every left click.
+                    if not self.settings_menu.handle_click(event.pos, self):
+                        if not self.game_over and not self.paused:
+                            self._left_click(event.pos)
+                elif event.button == 3:
+                    if not self.game_over and not self.paused:
                         self._try_sell(event.pos)
 
     def update(self, dt):
         """Move everything forward by one frame."""
-        # Once the game is over, nothing moves any more.
-        if self.game_over:
+        # Nothing moves while the game is paused or over.
+        if self.paused or self.game_over:
             return
 
         # The hero can always move (and fight, during a wave).
@@ -313,6 +323,7 @@ class Game:
             self._draw_placement_preview()
 
         self.hud.draw(self.screen, self)
+        self.settings_menu.draw(self.screen, self)
 
         if self.game_over:
             self._draw_game_over()
@@ -369,6 +380,8 @@ class Game:
 
     def _draw_grid(self):
         """Draw faint lines so you can see the dungeon's tile grid."""
+        if not self.show_grid:
+            return
         for x in range(0, settings.SCREEN_WIDTH, settings.TILE_SIZE):
             pygame.draw.line(
                 self.screen, settings.GRID_COLOUR,
