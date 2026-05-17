@@ -63,6 +63,8 @@ MONSTER_EYE_COLOUR = (240, 240, 120)  # glowing eyes
 # The hero's sword swing (press Space).
 HERO_ATTACK_DAMAGE = 12
 HERO_ATTACK_RANGE = 72         # pixels — how far the swing reaches
+HERO_ATTACK_ARC = 90           # width of the swing, in degrees, facing the
+                               # way the knight last moved (90 = a quarter)
 HERO_ATTACK_COOLDOWN = 0.35    # seconds you must wait between swings
 HERO_SWING_TIME = 0.12         # how long the swing flash stays on screen
 HERO_SWING_COLOUR = (255, 255, 200, 90)   # translucent flash (R, G, B, alpha)
