@@ -108,7 +108,7 @@ WAVE_BASE_MONSTERS = 3      # how many monsters wave 1 has
 WAVE_MONSTER_STEP = 2       # extra monsters each wave (3, 5, 7, 9, ...)
 WAVE_HP_STEP = 10           # extra HP each monster gains per wave
 WAVE_SPAWN_GAP = 0.8        # seconds between each monster appearing
-WAVE_BUILD_TIME = 8.0       # seconds of calm before a wave begins
+WAVE_BUILD_TIME = 10.0      # seconds of calm before a wave begins
 FINAL_WAVE = 20             # surviving this many waves wins the game
 
 # --- Game phases (the state machine) ---
