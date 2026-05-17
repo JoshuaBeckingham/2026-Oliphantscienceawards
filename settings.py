@@ -101,6 +101,7 @@ WAVE_GOLD_PER_WAVE = 10
 
 # --- Arrow tower (a buildable) ---
 TOWER_COST = 50                # gold to place one tower
+TOWER_SELL_FRACTION = 0.7      # fraction of the cost refunded when sold
 TOWER_RANGE = 160              # pixels — how far the tower can shoot
 TOWER_DAMAGE = 8
 TOWER_COOLDOWN = 0.7           # seconds between shots
@@ -112,6 +113,7 @@ TOWER_RANGE_COLOUR = (120, 160, 220, 40) # faint range circle (R,G,B,alpha)
 # Tile highlight shown under the mouse while building.
 PLACE_OK_COLOUR = (90, 200, 90, 70)      # a tower can go here
 PLACE_BAD_COLOUR = (200, 70, 70, 70)     # a tower cannot go here
+SELL_HIGHLIGHT_COLOUR = (230, 170, 60, 90)  # hovering a tower (right-click sells)
 
 # --- Projectiles (tower arrows) ---
 PROJECTILE_SPEED = 420         # pixels per second

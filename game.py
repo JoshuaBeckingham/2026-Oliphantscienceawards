@@ -115,9 +115,11 @@ class Game:
                     if self.phase == PHASE_BUILD and not self.game_over:
                         self._start_defense()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                # Left click during the build phase places a tower.
-                if event.button == 1 and not self.game_over:
-                    self._try_place_tower(event.pos)
+                if not self.game_over:
+                    if event.button == 1:        # left click — buy a tower
+                        self._try_place_tower(event.pos)
+                    elif event.button == 3:      # right click — sell a tower
+                        self._try_sell_tower(event.pos)
 
     def update(self, dt):
         """Move everything forward by one frame."""
@@ -185,6 +187,13 @@ class Game:
 
     # --- Building towers ----------------------------------------------
 
+    def _tower_at(self, tile_x, tile_y):
+        """Return the tower standing on tile (tile_x, tile_y), or None."""
+        for tower in self.towers:
+            if (tower.tile_x, tower.tile_y) == (tile_x, tile_y):
+                return tower
+        return None
+
     def _can_place_tower(self, tile_x, tile_y):
         """True if an arrow tower may be placed on tile (tile_x, tile_y)."""
         if self.phase != PHASE_BUILD:
@@ -193,9 +202,8 @@ class Game:
             return False
         if (tile_x, tile_y) == self.dungeon.heart_tile:
             return False
-        for tower in self.towers:
-            if (tower.tile_x, tower.tile_y) == (tile_x, tile_y):
-                return False
+        if self._tower_at(tile_x, tile_y) is not None:
+            return False
         return self.economy.can_afford(settings.TOWER_COST)
 
     def _try_place_tower(self, mouse_pos):
@@ -206,6 +214,22 @@ class Game:
             return
         self.economy.spend(settings.TOWER_COST)
         self.towers.append(ArrowTower(tile_x, tile_y))
+
+    def _try_sell_tower(self, mouse_pos):
+        """Sell the tower under the mouse, refunding part of its cost."""
+        if self.phase != PHASE_BUILD:
+            return
+        tile_x = mouse_pos[0] // settings.TILE_SIZE
+        tile_y = mouse_pos[1] // settings.TILE_SIZE
+        tower = self._tower_at(tile_x, tile_y)
+        if tower is None:
+            return
+        self.towers.remove(tower)
+        self.economy.earn(self._tower_refund())
+
+    def _tower_refund(self):
+        """How much gold selling a tower gives back."""
+        return int(settings.TOWER_COST * settings.TOWER_SELL_FRACTION)
 
     # --- Drawing ------------------------------------------------------
 
@@ -241,7 +265,9 @@ class Game:
         mouse_x, mouse_y = pygame.mouse.get_pos()
         tile_x = mouse_x // ts
         tile_y = mouse_y // ts
-        if self._can_place_tower(tile_x, tile_y):
+        if self._tower_at(tile_x, tile_y) is not None:
+            colour = settings.SELL_HIGHLIGHT_COLOUR   # right-click to sell
+        elif self._can_place_tower(tile_x, tile_y):
             colour = settings.PLACE_OK_COLOUR
         else:
             colour = settings.PLACE_BAD_COLOUR
@@ -257,8 +283,12 @@ class Game:
             next_wave = self.wave_manager.wave_number + 1
             self._blit_text(f"Wave {next_wave} - get ready", (16, 46))
             self._blit_text(
-                f"Click a floor tile: Arrow Tower ({settings.TOWER_COST}g)",
+                f"Left-click: build Arrow Tower ({settings.TOWER_COST}g)",
                 (16, 80),
+            )
+            self._blit_text(
+                f"Right-click a tower: sell it ({self._tower_refund()}g back)",
+                (16, 114),
             )
             seconds = math.ceil(self.build_timer)
             prompt = f"Starts in {seconds}s   (press Enter to start now)"
