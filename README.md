@@ -1,4 +1,4 @@
-# Dungeon Defender
+# Dungeon Defenders
 
 A 2D tower-defense roguelike where a hero explores a randomly generated dungeon, collects resources, builds defenses, and fights waves of monsters trying to destroy the heart of the dungeon.
 
@@ -89,7 +89,7 @@ Each step ends in a working, playable game. Save a copy (or commit to Git) at th
 
 1. **Window, grid, hero that moves** — foundation
 2. **Random dungeon with rocks and the heart** in the middle
-3. **Build phase: mine rocks for stone, place walls**
+3. **Rooms-and-corridors dungeon with doors** — explore, blocked by rock, open doors with E
 4. **One monster spawns and walks toward the heart** (pathfinding!)
 5. **Hero attacks monsters, monsters attack the heart**
 6. **Wave system** — 3 monsters → next wave → 5 monsters → harder
@@ -180,7 +180,7 @@ Bonus concepts that show up naturally:
 | Space | Attack |
 | 1 / 2 / 3 | Select wall / tower / trap (build phase) |
 | Left click | Place selected buildable |
-| E | Mine rock (when standing next to one) |
+| E | Open / close a door (when next to one) |
 | Enter | End build phase early, start the wave |
 | Esc | Pause / quit |
 
@@ -188,4 +188,4 @@ Bonus concepts that show up naturally:
 
 ## Status
 
-🛠️ **In development** — Step 1: window and moving hero
+🛠️ **In development** — Steps 1–3 complete (window, procedural dungeon, doors). Step 4 next: a monster that pathfinds to the heart.
