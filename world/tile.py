@@ -13,6 +13,10 @@ DOOR_OPEN = 4     # an open door — can be walked through
 # Tile types in this set stop things from walking through them.
 BLOCKING = {ROCK, WALL, DOOR_CLOSED}
 
+# Tiles that monster pathfinding must route around. Doors are NOT in here:
+# monsters head straight for the heart and push through any door.
+PATH_BLOCKING = {ROCK, WALL}
+
 # The two states a door can be in.
 DOORS = {DOOR_CLOSED, DOOR_OPEN}
 
@@ -20,6 +24,11 @@ DOORS = {DOOR_CLOSED, DOOR_OPEN}
 def blocks_movement(tile_type):
     """True if this kind of tile cannot be walked through."""
     return tile_type in BLOCKING
+
+
+def blocks_path(tile_type):
+    """True if monster pathfinding must route around this tile."""
+    return tile_type in PATH_BLOCKING
 
 
 def is_door(tile_type):

@@ -50,3 +50,11 @@ HEART_SIZE = TILE_SIZE - 6
 HEART_MAX_HP = 500
 HEART_COLOUR = (214, 48, 72)          # bright red heart
 HEART_SHINE_COLOUR = (255, 150, 165)  # small highlight on the heart
+
+# --- Monsters ---
+MONSTER_SIZE = TILE_SIZE - 16   # smaller than a tile, so it fits corridors
+MONSTER_SPEED = 90              # pixels per second (slower than the hero)
+MONSTER_MAX_HP = 30
+MONSTER_COLOUR = (110, 170, 70)       # goblin green
+MONSTER_DARK_COLOUR = (60, 100, 40)   # darker outline / shading
+MONSTER_EYE_COLOUR = (240, 240, 120)  # glowing eyes

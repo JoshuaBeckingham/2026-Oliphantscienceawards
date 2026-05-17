@@ -73,6 +73,17 @@ class Dungeon:
         hx, hy = self.heart_tile
         self.spawn_tile = (hx - 2, hy)
 
+        # Monsters spawn in the room that is farthest from the heart, so
+        # they have a proper journey across the dungeon.
+        if len(self.rooms) > 1:
+            farthest = max(
+                self.rooms[1:],
+                key=lambda r: _tile_distance_squared(r.centre, self.heart_tile),
+            )
+            self.monster_spawn_tile = farthest.centre
+        else:
+            self.monster_spawn_tile = (self.rooms[0].x, self.rooms[0].y)
+
     # --- Building the map ---------------------------------------------
 
     def _generate(self):
@@ -218,6 +229,14 @@ class Dungeon:
                 self.grid[ty][tx] = tile.DOOR_CLOSED
                 return True
         return False
+
+    def open_door_at(self, tx, ty):
+        """Open the door on tile (tx, ty), if there is a closed one there.
+
+        Used when a monster barges through a door it has reached.
+        """
+        if self.in_bounds(tx, ty) and self.grid[ty][tx] == tile.DOOR_CLOSED:
+            self.grid[ty][tx] = tile.DOOR_OPEN
 
     # --- Drawing ------------------------------------------------------
 

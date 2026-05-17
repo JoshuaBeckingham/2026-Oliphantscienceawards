@@ -12,7 +12,9 @@ import pygame
 import settings
 from entities.hero import Hero
 from entities.heart import Heart
+from entities.monster import Monster
 from world.dungeon import Dungeon
+from world import pathfinding
 
 
 class Game:
@@ -46,6 +48,24 @@ class Game:
             hero_py - settings.HERO_SIZE // 2,
         )
 
+        # Spawn one monster and use A* to plan its route to the heart.
+        self.monsters = []
+        self._spawn_monster()
+
+    def _spawn_monster(self):
+        """Create a monster at the spawn point and give it a path."""
+        spawn = self.dungeon.monster_spawn_tile
+        spawn_px, spawn_py = self.dungeon.tile_centre_pixels(*spawn)
+        monster = Monster(
+            spawn_px - settings.MONSTER_SIZE // 2,
+            spawn_py - settings.MONSTER_SIZE // 2,
+        )
+        path = pathfinding.find_path(
+            self.dungeon, spawn, self.dungeon.heart_tile,
+        )
+        monster.set_path(path)
+        self.monsters.append(monster)
+
     def run(self):
         """The main game loop. Keeps going until self.running becomes False."""
         while self.running:
@@ -77,13 +97,17 @@ class Game:
     def update(self, dt):
         """Move everything forward by one frame."""
         self.hero.update(dt, self.dungeon)
+        for monster in self.monsters:
+            monster.update(dt, self.dungeon)
 
     def draw(self):
         """Paint the whole screen for this frame."""
         self.screen.fill(settings.FLOOR_COLOUR)
         self._draw_grid()
-        self.dungeon.draw(self.screen)    # rocks on top of the grid
+        self.dungeon.draw(self.screen)    # rocks and doors on top of the grid
         self.heart.draw(self.screen)      # the heart at the centre
+        for monster in self.monsters:     # monsters marching in
+            monster.draw(self.screen)
         self.hero.draw(self.screen)       # the knight on top of everything
         pygame.display.flip()   # show the finished picture
 
