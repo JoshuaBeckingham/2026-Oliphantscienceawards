@@ -160,6 +160,9 @@ PROJECTILE_SPEED = 420         # pixels per second
 PROJECTILE_LENGTH = 14         # length of the arrow streak
 PROJECTILE_COLOUR = (245, 230, 150)
 
+# --- Particle effects ---
+SPARK_COLOUR = (250, 225, 140)  # the spark when an arrow strikes a monster
+
 # --- Spike trap (a buildable) ---
 TRAP_COST = 30
 TRAP_DAMAGE = 10               # damage of a level-1 trap

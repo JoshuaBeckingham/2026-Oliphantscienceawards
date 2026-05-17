@@ -34,7 +34,7 @@ class Hero(Entity):
         # swing happens in this direction. Starts off facing downward.
         self.facing = (0.0, 1.0)
 
-    def update(self, dt, dungeon, monsters):
+    def update(self, dt, dungeon, monsters, sounds):
         """Read the keys: move the hero, and swing the sword with Space."""
         keys = pygame.key.get_pressed()
 
@@ -71,9 +71,9 @@ class Hero(Entity):
         # Swing the sword while Space is held — but only as fast as the
         # cooldown allows, so you can't hit every single frame.
         if keys[pygame.K_SPACE] and self.attack_timer <= 0:
-            self._attack(monsters)
+            self._attack(monsters, sounds)
 
-    def _attack(self, monsters):
+    def _attack(self, monsters, sounds):
         """Swing the sword: hurt monsters within range AND inside the arc.
 
         A monster counts as "in the arc" if the direction to it is within
@@ -81,6 +81,7 @@ class Hero(Entity):
         """
         self.attack_timer = settings.HERO_ATTACK_COOLDOWN
         self.swing_timer = settings.HERO_SWING_TIME
+        sounds.play("swing")
 
         centre_x, centre_y = self.rect.center
         facing_x, facing_y = self.facing

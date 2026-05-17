@@ -23,6 +23,7 @@ class Projectile:
         self.speed = settings.PROJECTILE_SPEED
         self.damage = damage          # how hard it hits — set by the tower
         self.done = False             # True once it has hit or fizzled
+        self.hit = False              # True only if it struck a monster
 
         # Direction of travel, as a unit vector — used for drawing.
         self.dir_x = 0.0
@@ -53,6 +54,7 @@ class Projectile:
             # The arrow has caught up with the monster.
             self.target.take_damage(self.damage)
             self.done = True
+            self.hit = True
             return
 
         self.x += self.dir_x * step

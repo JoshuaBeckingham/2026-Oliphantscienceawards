@@ -23,12 +23,16 @@ from systems.waves import WaveManager
 from systems.economy import Economy
 from systems.ui import HUD, SettingsMenu, GameOverScreen
 from systems.highscore import load_high_score, save_high_score
+from systems.particles import ParticleSystem
+from systems.sounds import Sounds
 from buildables.tower import ArrowTower
 from buildables.trap import SpikeTrap
 
 
 class Game:
     def __init__(self):
+        # Ask for simple mono audio before pygame starts up.
+        pygame.mixer.pre_init(22050, -16, 1)
         pygame.init()
         self.screen = pygame.display.set_mode(
             (settings.SCREEN_WIDTH, settings.SCREEN_HEIGHT)
@@ -41,6 +45,7 @@ class Game:
         self.hud = HUD()
         self.settings_menu = SettingsMenu()
         self.game_over_screen = GameOverScreen()
+        self.sounds = Sounds()
         self.show_grid = True
         self.show_ranges = True
         self.high_score = load_high_score()
@@ -74,6 +79,9 @@ class Game:
         # Monsters in the dungeon, and the system that spawns them.
         self.monsters = []
         self.wave_manager = WaveManager(self.dungeon)
+
+        # Decorative particle effects (death bursts, hit sparks).
+        self.particles = ParticleSystem()
 
         # Things the player has built, and the arrows currently flying.
         self.towers = []
@@ -149,12 +157,15 @@ class Game:
             return
 
         # The hero can always move (and fight, during a wave).
-        self.hero.update(dt, self.dungeon, self.monsters)
+        self.hero.update(dt, self.dungeon, self.monsters, self.sounds)
 
         if self.phase == settings.PHASE_BUILD:
             self._update_build(dt)
         elif self.phase == settings.PHASE_DEFENSE:
             self._update_defense(dt)
+
+        # Particle effects drift and fade every frame.
+        self.particles.update(dt)
 
         # If the heart's HP has run out, the game is lost.
         if not self.heart.is_alive:
@@ -186,10 +197,28 @@ class Game:
         # Move the arrows; they damage monsters when they land.
         for projectile in self.projectiles:
             projectile.update(dt, self.dungeon)
+        # An arrow that struck a monster makes a spark and a sound.
+        for projectile in self.projectiles:
+            if projectile.done and projectile.hit:
+                self.particles.burst(projectile.x, projectile.y,
+                                     settings.SPARK_COLOUR,
+                                     count=6, speed=120, life=0.3, size=4)
+                self.sounds.play("hit")
         self.projectiles = [p for p in self.projectiles if not p.done]
 
-        # Forget any monsters that have been killed.
-        self.monsters = [m for m in self.monsters if m.is_alive]
+        # Forget any monsters that have been killed — each one bursts
+        # into particles and plays a death sound as it goes.
+        survivors = []
+        for monster in self.monsters:
+            if monster.is_alive:
+                survivors.append(monster)
+            else:
+                centre_x, centre_y = monster.rect.center
+                self.particles.burst(centre_x, centre_y, monster.colour,
+                                     count=monster.size // 3,
+                                     speed=170, life=0.55, size=6)
+                self.sounds.play("death")
+        self.monsters = survivors
 
         # The wave is cleared once every monster is spawned AND gone.
         if self.wave_manager.wave_fully_spawned and not self.monsters:
@@ -199,6 +228,7 @@ class Game:
         """Switch to the DEFENSE phase and begin the next wave."""
         self.phase = settings.PHASE_DEFENSE
         self.wave_manager.start_wave()
+        self.sounds.play("wave")
 
     def _start_build(self):
         """A wave was cleared: score it, reward it, return to BUILD."""
@@ -227,6 +257,7 @@ class Game:
             return   # the game has already ended
         self.game_over = True
         self.won = won
+        self.sounds.play("win" if won else "lose")
         if self.waves_cleared > self.high_score:
             self.high_score = self.waves_cleared
             save_high_score(self.high_score)
@@ -347,6 +378,7 @@ class Game:
             monster.draw(self.screen)
         for projectile in self.projectiles:
             projectile.draw(self.screen)
+        self.particles.draw(self.screen)  # death bursts and hit sparks
         self.hero.draw(self.screen)       # the knight on top of everything
 
         if self.phase == settings.PHASE_BUILD and not self.game_over:
