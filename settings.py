@@ -77,7 +77,7 @@ BOSS_MAX_HP = 400
 BOSS_COLOUR = (140, 62, 152)          # menacing purple
 BOSS_DARK_COLOUR = (80, 34, 90)
 BOSS_ATTACK_DAMAGE = 60               # a boss hits the heart very hard
-BOSS_WAVE_INTERVAL = 5                # a boss appears on every Nth wave
+# The boss only appears on the final wave (see FINAL_WAVE above).
 
 # --- Combat ---
 # The hero's sword swing (press Space).

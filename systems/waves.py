@@ -67,8 +67,8 @@ class WaveManager:
                 queue.append("orc")
             else:
                 queue.append("goblin")
-        # On every BOSS_WAVE_INTERVAL'th wave, a boss arrives last.
-        if wave % settings.BOSS_WAVE_INTERVAL == 0:
+        # The final wave ends with the boss.
+        if wave == settings.FINAL_WAVE:
             queue.append("boss")
         return queue
 
