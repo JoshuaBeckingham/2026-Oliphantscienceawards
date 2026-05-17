@@ -117,12 +117,12 @@ class SettingsMenu:
             settings.SCREEN_WIDTH - size - margin, margin, size, size)
 
         # The pause panel, centred on the screen.
-        panel_w, panel_h = 440, 392
+        panel_w, panel_h = 440, 464
         panel_x = (settings.SCREEN_WIDTH - panel_w) // 2
         panel_y = (settings.SCREEN_HEIGHT - panel_h) // 2
         self.panel_rect = pygame.Rect(panel_x, panel_y, panel_w, panel_h)
 
-        # Four buttons, stacked inside the panel.
+        # Five buttons, stacked inside the panel.
         button_w, button_h = 360, 56
         button_x = panel_x + (panel_w - button_w) // 2
         self.resume_rect = pygame.Rect(button_x, panel_y + 92,
@@ -131,7 +131,9 @@ class SettingsMenu:
                                      button_w, button_h)
         self.ranges_rect = pygame.Rect(button_x, panel_y + 236,
                                        button_w, button_h)
-        self.quit_rect = pygame.Rect(button_x, panel_y + 308,
+        self.menu_rect = pygame.Rect(button_x, panel_y + 308,
+                                     button_w, button_h)
+        self.quit_rect = pygame.Rect(button_x, panel_y + 380,
                                      button_w, button_h)
 
     def handle_click(self, pos, game):
@@ -152,6 +154,8 @@ class SettingsMenu:
             game.show_grid = not game.show_grid
         elif self.ranges_rect.collidepoint(pos):
             game.show_ranges = not game.show_ranges
+        elif self.menu_rect.collidepoint(pos):
+            game.go_to_title()
         elif self.quit_rect.collidepoint(pos):
             game.running = False
         return True
@@ -201,6 +205,7 @@ class SettingsMenu:
         ranges_text = ("Tower ranges: ON" if game.show_ranges
                        else "Tower ranges: OFF")
         self._draw_button(surface, self.ranges_rect, ranges_text, mouse_pos)
+        self._draw_button(surface, self.menu_rect, "Main menu", mouse_pos)
         self._draw_button(surface, self.quit_rect, "Quit game", mouse_pos)
 
     def _draw_button(self, surface, rect, text, mouse_pos):
@@ -226,7 +231,7 @@ class GameOverScreen:
     def __init__(self):
         self.title_font = pygame.font.Font(None, 96)
         self.score_font = pygame.font.Font(None, 52)
-        self.button_font = pygame.font.Font(None, 40)
+        self.button_font = pygame.font.Font(None, 34)
 
         # A panel centred on the screen.
         panel_w, panel_h = 620, 400
@@ -234,20 +239,25 @@ class GameOverScreen:
         panel_y = (settings.SCREEN_HEIGHT - panel_h) // 2
         self.panel_rect = pygame.Rect(panel_x, panel_y, panel_w, panel_h)
 
-        # Two buttons side by side near the bottom of the panel.
-        button_w, button_h, gap = 220, 60, 28
-        total = button_w * 2 + gap
+        # Three buttons side by side near the bottom of the panel.
+        button_w, button_h, gap = 184, 58, 16
+        total = button_w * 3 + gap * 2
         button_x = panel_x + (panel_w - total) // 2
-        button_y = panel_y + panel_h - 86
+        button_y = panel_y + panel_h - 84
+        step = button_w + gap
         self.again_rect = pygame.Rect(button_x, button_y,
                                       button_w, button_h)
-        self.quit_rect = pygame.Rect(button_x + button_w + gap, button_y,
+        self.menu_rect = pygame.Rect(button_x + step, button_y,
+                                     button_w, button_h)
+        self.quit_rect = pygame.Rect(button_x + 2 * step, button_y,
                                      button_w, button_h)
 
     def handle_click(self, pos, game):
         """React to a left-click on the game-over screen."""
         if self.again_rect.collidepoint(pos):
             game.new_game()
+        elif self.menu_rect.collidepoint(pos):
+            game.go_to_title()
         elif self.quit_rect.collidepoint(pos):
             game.running = False
 
@@ -294,6 +304,7 @@ class GameOverScreen:
 
         mouse_pos = pygame.mouse.get_pos()
         self._draw_button(surface, self.again_rect, "Play again", mouse_pos)
+        self._draw_button(surface, self.menu_rect, "Main menu", mouse_pos)
         self._draw_button(surface, self.quit_rect, "Quit", mouse_pos)
 
     def _draw_button(self, surface, rect, text, mouse_pos):

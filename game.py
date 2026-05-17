@@ -56,8 +56,14 @@ class Game:
         self.on_title = True
 
     def start_playing(self):
-        """Leave the title screen and begin playing."""
+        """Begin a fresh game from the title screen."""
+        self.new_game()
         self.on_title = False
+
+    def go_to_title(self):
+        """Leave the current game and return to the title screen."""
+        self.on_title = True
+        self.paused = False
 
     def new_game(self):
         """Start a fresh game — a new dungeon, hero, gold and waves."""
