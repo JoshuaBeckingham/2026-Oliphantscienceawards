@@ -91,3 +91,29 @@ WAVE_BUILD_TIME = 8.0       # seconds of calm before a wave begins
 
 # On-screen wave / phase text.
 HUD_TEXT_COLOUR = (235, 235, 245)
+
+# --- Gold (the economy) ---
+STARTING_GOLD = 80
+# Gold is earned by surviving a whole wave. The reward grows each wave:
+# reward = WAVE_GOLD_BASE + wave_number * WAVE_GOLD_PER_WAVE
+WAVE_GOLD_BASE = 40
+WAVE_GOLD_PER_WAVE = 10
+
+# --- Arrow tower (a buildable) ---
+TOWER_COST = 50                # gold to place one tower
+TOWER_RANGE = 160              # pixels — how far the tower can shoot
+TOWER_DAMAGE = 8
+TOWER_COOLDOWN = 0.7           # seconds between shots
+TOWER_BASE_COLOUR = (95, 90, 105)        # stone body of the tower
+TOWER_TRIM_COLOUR = (145, 140, 160)      # lighter edge
+TOWER_TURRET_COLOUR = (170, 120, 60)     # the wooden turret on top
+TOWER_RANGE_COLOUR = (120, 160, 220, 40) # faint range circle (R,G,B,alpha)
+
+# Tile highlight shown under the mouse while building.
+PLACE_OK_COLOUR = (90, 200, 90, 70)      # a tower can go here
+PLACE_BAD_COLOUR = (200, 70, 70, 70)     # a tower cannot go here
+
+# --- Projectiles (tower arrows) ---
+PROJECTILE_SPEED = 420         # pixels per second
+PROJECTILE_LENGTH = 14         # length of the arrow streak
+PROJECTILE_COLOUR = (245, 230, 150)

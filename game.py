@@ -8,7 +8,7 @@ Do that 60 times a second and it looks like smooth motion.
 
 The game is also a STATE MACHINE: at any moment it is in exactly one
 PHASE, and simple rules decide when to switch:
-    BUILD phase   — a calm countdown before the wave; explore, open doors.
+    BUILD phase   — a calm countdown; place towers, explore, open doors.
     DEFENSE phase — the wave's monsters attack; fight them off.
 Clearing a wave switches BUILD <- DEFENSE; the countdown running out (or
 pressing Enter) switches BUILD -> DEFENSE.
@@ -22,7 +22,10 @@ import settings
 from entities.hero import Hero
 from entities.heart import Heart
 from world.dungeon import Dungeon
+from world import tile
 from systems.waves import WaveManager
+from systems.economy import Economy
+from buildables.tower import ArrowTower
 
 # The two phases the game switches between.
 PHASE_BUILD = "build"
@@ -64,6 +67,13 @@ class Game:
         self.monsters = []
         self.wave_manager = WaveManager(self.dungeon)
 
+        # Towers the player has built, and the arrows currently flying.
+        self.towers = []
+        self.projectiles = []
+
+        # The player's gold.
+        self.economy = Economy()
+
         # The game starts in the BUILD phase, counting down to wave 1.
         self.phase = PHASE_BUILD
         self.build_timer = settings.WAVE_BUILD_TIME
@@ -87,7 +97,7 @@ class Game:
         pygame.quit()
 
     def handle_events(self):
-        """Deal with key presses and the window's close button."""
+        """Deal with key presses, mouse clicks and the close button."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
@@ -104,6 +114,10 @@ class Game:
                     # Skip the rest of the build countdown.
                     if self.phase == PHASE_BUILD and not self.game_over:
                         self._start_defense()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                # Left click during the build phase places a tower.
+                if event.button == 1 and not self.game_over:
+                    self._try_place_tower(event.pos)
 
     def update(self, dt):
         """Move everything forward by one frame."""
@@ -132,10 +146,22 @@ class Game:
     def _update_defense(self, dt):
         """Spawn and run the wave; return to BUILD once it is cleared."""
         self.wave_manager.update(dt, self.monsters)
+
         for monster in self.monsters:
             monster.update(dt, self.dungeon, self.heart)
 
-        # Forget any monsters the hero has killed.
+        # Towers shoot — each one may fire a new arrow this frame.
+        for tower in self.towers:
+            arrow = tower.update(dt, self.monsters)
+            if arrow is not None:
+                self.projectiles.append(arrow)
+
+        # Move the arrows; they damage monsters when they land.
+        for projectile in self.projectiles:
+            projectile.update(dt)
+        self.projectiles = [p for p in self.projectiles if not p.done]
+
+        # Forget any monsters that have been killed.
         self.monsters = [m for m in self.monsters if m.is_alive]
 
         # The wave is cleared once every monster is spawned AND gone.
@@ -148,19 +174,60 @@ class Game:
         self.wave_manager.start_wave()
 
     def _start_build(self):
-        """Switch back to the BUILD phase, counting down to the next wave."""
+        """Reward the cleared wave, then switch back to the BUILD phase."""
+        reward = (settings.WAVE_GOLD_BASE
+                  + self.wave_manager.wave_number * settings.WAVE_GOLD_PER_WAVE)
+        self.economy.earn(reward)
+
         self.phase = PHASE_BUILD
         self.build_timer = settings.WAVE_BUILD_TIME
+        self.projectiles = []   # any leftover arrows are cleared
+
+    # --- Building towers ----------------------------------------------
+
+    def _can_place_tower(self, tile_x, tile_y):
+        """True if an arrow tower may be placed on tile (tile_x, tile_y)."""
+        if self.phase != PHASE_BUILD:
+            return False
+        if self.dungeon.get_tile(tile_x, tile_y) != tile.FLOOR:
+            return False
+        if (tile_x, tile_y) == self.dungeon.heart_tile:
+            return False
+        for tower in self.towers:
+            if (tower.tile_x, tower.tile_y) == (tile_x, tile_y):
+                return False
+        return self.economy.can_afford(settings.TOWER_COST)
+
+    def _try_place_tower(self, mouse_pos):
+        """Place a tower under the mouse, if that tile is allowed."""
+        tile_x = mouse_pos[0] // settings.TILE_SIZE
+        tile_y = mouse_pos[1] // settings.TILE_SIZE
+        if not self._can_place_tower(tile_x, tile_y):
+            return
+        self.economy.spend(settings.TOWER_COST)
+        self.towers.append(ArrowTower(tile_x, tile_y))
+
+    # --- Drawing ------------------------------------------------------
 
     def draw(self):
         """Paint the whole screen for this frame."""
         self.screen.fill(settings.FLOOR_COLOUR)
         self._draw_grid()
         self.dungeon.draw(self.screen)    # rocks and doors on top of the grid
+        for tower in self.towers:
+            tower.draw(self.screen)
         self.heart.draw(self.screen)      # the heart at the centre
         for monster in self.monsters:     # monsters marching in
             monster.draw(self.screen)
+        for projectile in self.projectiles:
+            projectile.draw(self.screen)
         self.hero.draw(self.screen)       # the knight on top of everything
+
+        if self.phase == PHASE_BUILD and not self.game_over:
+            for tower in self.towers:
+                tower.draw_range(self.screen)
+            self._draw_placement_preview()
+
         self._draw_hud()
 
         if self.game_over:
@@ -168,11 +235,31 @@ class Game:
 
         pygame.display.flip()   # show the finished picture
 
+    def _draw_placement_preview(self):
+        """Highlight the tile under the mouse — green if a tower can go there."""
+        ts = settings.TILE_SIZE
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        tile_x = mouse_x // ts
+        tile_y = mouse_y // ts
+        if self._can_place_tower(tile_x, tile_y):
+            colour = settings.PLACE_OK_COLOUR
+        else:
+            colour = settings.PLACE_BAD_COLOUR
+        highlight = pygame.Surface((ts, ts), pygame.SRCALPHA)
+        highlight.fill(colour)
+        self.screen.blit(highlight, (tile_x * ts, tile_y * ts))
+
     def _draw_hud(self):
-        """Draw the wave number and phase information as text."""
+        """Draw the gold, wave number and phase information as text."""
+        self._blit_text(f"Gold: {self.economy.gold}", (16, 12))
+
         if self.phase == PHASE_BUILD:
             next_wave = self.wave_manager.wave_number + 1
-            self._blit_text(f"Wave {next_wave} - get ready", (16, 12))
+            self._blit_text(f"Wave {next_wave} - get ready", (16, 46))
+            self._blit_text(
+                f"Click a floor tile: Arrow Tower ({settings.TOWER_COST}g)",
+                (16, 80),
+            )
             seconds = math.ceil(self.build_timer)
             prompt = f"Starts in {seconds}s   (press Enter to start now)"
             surface = self.hud_font.render(prompt, True,
@@ -180,9 +267,9 @@ class Game:
             rect = surface.get_rect(center=(settings.SCREEN_WIDTH // 2, 28))
             self.screen.blit(surface, rect)
         else:
-            self._blit_text(f"Wave {self.wave_manager.wave_number}", (16, 12))
+            self._blit_text(f"Wave {self.wave_manager.wave_number}", (16, 46))
             left = len(self.monsters) + self.wave_manager.to_spawn
-            self._blit_text(f"Monsters left: {left}", (16, 46))
+            self._blit_text(f"Monsters left: {left}", (16, 80))
 
     def _blit_text(self, text, position):
         """Draw a line of HUD text at the given screen position."""
