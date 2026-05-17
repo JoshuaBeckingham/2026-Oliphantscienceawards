@@ -70,6 +70,15 @@ ORC_COLOUR = (160, 95, 72)            # muddy orc red-brown
 ORC_DARK_COLOUR = (96, 54, 42)
 ORC_FIRST_WAVE = 3                    # the wave orcs start appearing
 
+# Boss — a huge, slow, very tough monster that arrives on boss waves.
+BOSS_SIZE = 64
+BOSS_SPEED = 45
+BOSS_MAX_HP = 400
+BOSS_COLOUR = (140, 62, 152)          # menacing purple
+BOSS_DARK_COLOUR = (80, 34, 90)
+BOSS_ATTACK_DAMAGE = 60               # a boss hits the heart very hard
+BOSS_WAVE_INTERVAL = 5                # a boss appears on every Nth wave
+
 # --- Combat ---
 # The hero's sword swing (press Space).
 HERO_ATTACK_DAMAGE = 12

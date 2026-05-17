@@ -21,10 +21,12 @@ from entities.entity import Entity
 class Monster(Entity):
     """Base class for every monster. Follows a path, then attacks the heart."""
 
-    def __init__(self, x, y, size, max_hp, speed, colour, dark_colour):
+    def __init__(self, x, y, size, max_hp, speed, colour, dark_colour,
+                 attack_damage=settings.MONSTER_ATTACK_DAMAGE):
         super().__init__(x, y, size, colour, max_hp)
         self.speed = speed
         self.dark_colour = dark_colour       # outline / shading colour
+        self.attack_damage = attack_damage   # damage dealt to the heart
         self.path = []          # list of (tile_x, tile_y) to walk through
         self.path_index = 0     # which waypoint we are heading to now
         self.attack_timer = 0.0  # counts down to the next hit on the heart
@@ -75,7 +77,7 @@ class Monster(Entity):
         """Once at the heart, hit it every MONSTER_ATTACK_COOLDOWN seconds."""
         self.attack_timer -= dt
         if self.attack_timer <= 0:
-            heart.take_damage(settings.MONSTER_ATTACK_DAMAGE)
+            heart.take_damage(self.attack_damage)
             self.attack_timer = settings.MONSTER_ATTACK_COOLDOWN
 
     def draw(self, surface):
@@ -126,4 +128,19 @@ class Orc(Monster):
             settings.ORC_SPEED,
             settings.ORC_COLOUR,
             settings.ORC_DARK_COLOUR,
+        )
+
+
+class Boss(Monster):
+    """A huge, slow, very tough monster that arrives on boss waves."""
+
+    def __init__(self, x, y, max_hp):
+        super().__init__(
+            x, y,
+            settings.BOSS_SIZE,
+            max_hp,
+            settings.BOSS_SPEED,
+            settings.BOSS_COLOUR,
+            settings.BOSS_DARK_COLOUR,
+            settings.BOSS_ATTACK_DAMAGE,
         )

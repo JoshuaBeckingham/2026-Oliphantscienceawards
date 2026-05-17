@@ -213,3 +213,92 @@ class SettingsMenu:
                          border_radius=8)
         label = self.font.render(text, True, settings.MENU_TEXT_COLOUR)
         surface.blit(label, label.get_rect(center=rect.center))
+
+
+class GameOverScreen:
+    """The screen shown when the heart is destroyed.
+
+    It shows the score (waves survived) and the best score, with a
+    'Play again' button and a 'Quit' button.
+    """
+
+    def __init__(self):
+        self.title_font = pygame.font.Font(None, 96)
+        self.score_font = pygame.font.Font(None, 52)
+        self.button_font = pygame.font.Font(None, 40)
+
+        # A panel centred on the screen.
+        panel_w, panel_h = 620, 400
+        panel_x = (settings.SCREEN_WIDTH - panel_w) // 2
+        panel_y = (settings.SCREEN_HEIGHT - panel_h) // 2
+        self.panel_rect = pygame.Rect(panel_x, panel_y, panel_w, panel_h)
+
+        # Two buttons side by side near the bottom of the panel.
+        button_w, button_h, gap = 220, 60, 28
+        total = button_w * 2 + gap
+        button_x = panel_x + (panel_w - total) // 2
+        button_y = panel_y + panel_h - 86
+        self.again_rect = pygame.Rect(button_x, button_y,
+                                      button_w, button_h)
+        self.quit_rect = pygame.Rect(button_x + button_w + gap, button_y,
+                                     button_w, button_h)
+
+    def handle_click(self, pos, game):
+        """React to a left-click on the game-over screen."""
+        if self.again_rect.collidepoint(pos):
+            game.new_game()
+        elif self.quit_rect.collidepoint(pos):
+            game.running = False
+
+    def draw(self, surface, game):
+        """Dim the screen and draw the game-over panel."""
+        overlay = pygame.Surface(
+            (settings.SCREEN_WIDTH, settings.SCREEN_HEIGHT), pygame.SRCALPHA)
+        overlay.fill(settings.MENU_OVERLAY_COLOUR)
+        surface.blit(overlay, (0, 0))
+
+        pygame.draw.rect(surface, settings.MENU_PANEL_COLOUR,
+                         self.panel_rect, border_radius=14)
+        pygame.draw.rect(surface, settings.MENU_BORDER_COLOUR,
+                         self.panel_rect, 3, border_radius=14)
+
+        centre_x = self.panel_rect.centerx
+
+        title = self.title_font.render("GAME OVER", True,
+                                       settings.GAME_OVER_COLOUR)
+        surface.blit(title, title.get_rect(
+            center=(centre_x, self.panel_rect.top + 70)))
+
+        score = self.score_font.render(
+            f"Waves survived: {game.waves_cleared}", True,
+            settings.MENU_TEXT_COLOUR)
+        surface.blit(score, score.get_rect(
+            center=(centre_x, self.panel_rect.top + 160)))
+
+        best = self.score_font.render(
+            f"Best: {game.high_score}", True, settings.MENU_TEXT_COLOUR)
+        surface.blit(best, best.get_rect(
+            center=(centre_x, self.panel_rect.top + 215)))
+
+        # Celebrate a brand-new record.
+        if game.waves_cleared > 0 and game.waves_cleared == game.high_score:
+            new_best = self.button_font.render("New best!", True,
+                                               settings.HUD_SELECTED_COLOUR)
+            surface.blit(new_best, new_best.get_rect(
+                center=(centre_x, self.panel_rect.top + 258)))
+
+        mouse_pos = pygame.mouse.get_pos()
+        self._draw_button(surface, self.again_rect, "Play again", mouse_pos)
+        self._draw_button(surface, self.quit_rect, "Quit", mouse_pos)
+
+    def _draw_button(self, surface, rect, text, mouse_pos):
+        """Draw one button, brighter when the mouse is over it."""
+        if rect.collidepoint(mouse_pos):
+            colour = settings.MENU_BUTTON_HOVER_COLOUR
+        else:
+            colour = settings.MENU_BUTTON_COLOUR
+        pygame.draw.rect(surface, colour, rect, border_radius=8)
+        pygame.draw.rect(surface, settings.MENU_BORDER_COLOUR, rect, 2,
+                         border_radius=8)
+        label = self.button_font.render(text, True, settings.MENU_TEXT_COLOUR)
+        surface.blit(label, label.get_rect(center=rect.center))

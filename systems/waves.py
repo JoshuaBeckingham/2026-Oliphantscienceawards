@@ -10,7 +10,7 @@ all at once.
 import random
 
 import settings
-from entities.monster import Goblin, Orc
+from entities.monster import Goblin, Orc, Boss
 from world import pathfinding
 
 
@@ -59,7 +59,7 @@ class WaveManager:
         self.spawn_timer = 0.0   # the first monster appears straight away
 
     def _build_wave(self, wave):
-        """Decide the kind of each monster in the wave (goblin or orc)."""
+        """Decide the kind of each monster in the wave."""
         queue = []
         for i in range(self.monsters_in_wave(wave)):
             # From ORC_FIRST_WAVE on, every third monster is an orc.
@@ -67,6 +67,9 @@ class WaveManager:
                 queue.append("orc")
             else:
                 queue.append("goblin")
+        # On every BOSS_WAVE_INTERVAL'th wave, a boss arrives last.
+        if wave % settings.BOSS_WAVE_INTERVAL == 0:
+            queue.append("boss")
         return queue
 
     def update(self, dt, monsters):
@@ -85,7 +88,11 @@ class WaveManager:
         # Later waves make every monster tougher.
         hp_bonus = (self.wave_number - 1) * settings.WAVE_HP_STEP
 
-        if kind == "orc":
+        if kind == "boss":
+            size = settings.BOSS_SIZE
+            monster = Boss(spawn_x - size // 2, spawn_y - size // 2,
+                           settings.BOSS_MAX_HP + hp_bonus)
+        elif kind == "orc":
             size = settings.ORC_SIZE
             monster = Orc(spawn_x - size // 2, spawn_y - size // 2,
                           settings.ORC_MAX_HP + hp_bonus)

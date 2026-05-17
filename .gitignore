@@ -11,3 +11,6 @@ __pycache__/
 
 # Claude Code personal settings (machine-local, not shared)
 .claude/settings.local.json
+
+# The player's saved high score
+highscore.txt

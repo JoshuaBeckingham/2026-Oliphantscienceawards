@@ -21,7 +21,8 @@ from world.dungeon import Dungeon
 from world import tile
 from systems.waves import WaveManager
 from systems.economy import Economy
-from systems.ui import HUD, SettingsMenu
+from systems.ui import HUD, SettingsMenu, GameOverScreen
+from systems.highscore import load_high_score, save_high_score
 from buildables.tower import ArrowTower
 from buildables.trap import SpikeTrap
 
@@ -36,6 +37,19 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
 
+        # These last for the whole program, across "play again":
+        self.hud = HUD()
+        self.settings_menu = SettingsMenu()
+        self.game_over_screen = GameOverScreen()
+        self.show_grid = True
+        self.show_ranges = True
+        self.high_score = load_high_score()
+
+        # Set up the first game.
+        self.new_game()
+
+    def new_game(self):
+        """Start a fresh game — a new dungeon, hero, gold and waves."""
         # Build the dungeon first — the heart and hero are placed inside it.
         self.dungeon = Dungeon()
 
@@ -57,7 +71,7 @@ class Game:
             hero_py - settings.HERO_SIZE // 2,
         )
 
-        # Monsters in the dungeon, and the system that spawns them in waves.
+        # Monsters in the dungeon, and the system that spawns them.
         self.monsters = []
         self.wave_manager = WaveManager(self.dungeon)
 
@@ -65,27 +79,18 @@ class Game:
         self.towers = []
         self.traps = []
         self.projectiles = []
-
-        # Which buildable a left-click will place ("tower" or "trap").
         self.selected_buildable = "tower"
 
-        # The player's gold, the heads-up display and the settings menu.
+        # The player's gold.
         self.economy = Economy()
-        self.hud = HUD()
-        self.settings_menu = SettingsMenu()
-
-        # Player options the settings menu can change.
-        self.paused = False
-        self.show_grid = True
-        self.show_ranges = True
 
         # The game starts in the BUILD phase, counting down to wave 1.
         self.phase = settings.PHASE_BUILD
         self.build_timer = settings.WAVE_BUILD_TIME
 
-        # The game ends when the heart is destroyed.
+        self.paused = False
         self.game_over = False
-        self.big_font = pygame.font.Font(None, 110)
+        self.waves_cleared = 0   # the score: how many waves were survived
 
     def run(self):
         """The main game loop. Keeps going until self.running becomes False."""
@@ -126,9 +131,11 @@ class Game:
                     self.selected_buildable = "trap"
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
+                    if self.game_over:
+                        self.game_over_screen.handle_click(event.pos, self)
                     # The settings menu gets first look at every left click.
-                    if not self.settings_menu.handle_click(event.pos, self):
-                        if not self.game_over and not self.paused:
+                    elif not self.settings_menu.handle_click(event.pos, self):
+                        if not self.paused:
                             self._left_click(event.pos)
                 elif event.button == 3:
                     if not self.game_over and not self.paused:
@@ -150,7 +157,7 @@ class Game:
 
         # If the heart's HP has run out, the game is over.
         if not self.heart.is_alive:
-            self.game_over = True
+            self._end_game()
 
     def _update_build(self, dt):
         """Count down the calm phase; start the wave when it runs out."""
@@ -193,7 +200,9 @@ class Game:
         self.wave_manager.start_wave()
 
     def _start_build(self):
-        """Reward the cleared wave, then switch back to the BUILD phase."""
+        """A wave was cleared: score it, reward it, return to BUILD."""
+        self.waves_cleared += 1
+
         reward = (settings.WAVE_GOLD_BASE
                   + self.wave_manager.wave_number * settings.WAVE_GOLD_PER_WAVE)
         self.economy.earn(reward)
@@ -205,6 +214,13 @@ class Game:
         # Decide which room the next wave comes from, so the player can
         # see the marker and build to meet it.
         self.wave_manager.choose_spawn_room()
+
+    def _end_game(self):
+        """The heart is destroyed: end the game and save a new high score."""
+        self.game_over = True
+        if self.waves_cleared > self.high_score:
+            self.high_score = self.waves_cleared
+            save_high_score(self.high_score)
 
     # --- Building and selling -----------------------------------------
 
@@ -332,10 +348,12 @@ class Game:
             self._draw_placement_preview()
 
         self.hud.draw(self.screen, self)
-        self.settings_menu.draw(self.screen, self)
 
+        # The game-over screen and the settings menu draw on top of all.
         if self.game_over:
-            self._draw_game_over()
+            self.game_over_screen.draw(self.screen, self)
+        else:
+            self.settings_menu.draw(self.screen, self)
 
         pygame.display.flip()   # show the finished picture
 
@@ -377,15 +395,6 @@ class Game:
         highlight = pygame.Surface((ts, ts), pygame.SRCALPHA)
         highlight.fill(colour)
         self.screen.blit(highlight, (tile_x * ts, tile_y * ts))
-
-    def _draw_game_over(self):
-        """Cover the screen with a big 'GAME OVER' message."""
-        text = self.big_font.render("GAME OVER", True,
-                                    settings.GAME_OVER_COLOUR)
-        text_rect = text.get_rect(
-            center=(settings.SCREEN_WIDTH // 2, settings.SCREEN_HEIGHT // 2)
-        )
-        self.screen.blit(text, text_rect)
 
     def _draw_grid(self):
         """Draw faint lines so you can see the dungeon's tile grid."""
