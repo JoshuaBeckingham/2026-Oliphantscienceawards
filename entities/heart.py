@@ -46,3 +46,6 @@ class Heart(Entity):
         shine = (round(x + 0.34 * s), round(y + 0.30 * s))
         pygame.draw.circle(surface, settings.HEART_SHINE_COLOUR,
                            shine, round(0.10 * s))
+
+        # Show a health bar once the heart has taken damage.
+        self.draw_health_bar(surface)

@@ -1,11 +1,8 @@
 """The Monster — a creature that walks through the dungeon to the heart.
 
-For now there is just one kind of monster and it only walks. Attacking
-the heart comes in the next step; more monster types come later.
-
-The monster does not work out collisions like the hero does. Instead it
-is given a PATH (a list of tiles found by A* pathfinding) and simply
-follows it, waypoint by waypoint.
+For now there is just one kind of monster. It is given a PATH (a list of
+tiles found by A* pathfinding) and follows it waypoint by waypoint. Once
+it arrives at the heart, it attacks the heart over and over.
 """
 
 import math
@@ -29,6 +26,7 @@ class Monster(Entity):
         self.speed = settings.MONSTER_SPEED
         self.path = []          # list of (tile_x, tile_y) to walk through
         self.path_index = 0     # which waypoint we are heading to now
+        self.attack_timer = 0.0  # counts down to the next hit on the heart
 
     def set_path(self, tile_path):
         """Give the monster a new path to follow."""
@@ -40,9 +38,10 @@ class Monster(Entity):
         """True once the monster has walked the whole path."""
         return self.path_index >= len(self.path)
 
-    def update(self, dt, dungeon):
-        """Walk a little way along the path toward the next waypoint."""
+    def update(self, dt, dungeon, heart):
+        """Walk along the path, then attack the heart once it is reached."""
         if self.reached_goal:
+            self._attack_heart(dt, heart)
             return
 
         # Where is the next waypoint, in pixels?
@@ -71,6 +70,13 @@ class Monster(Entity):
             self.x += gap_x / distance * step
             self.y += gap_y / distance * step
 
+    def _attack_heart(self, dt, heart):
+        """Once at the heart, hit it every MONSTER_ATTACK_COOLDOWN seconds."""
+        self.attack_timer -= dt
+        if self.attack_timer <= 0:
+            heart.take_damage(settings.MONSTER_ATTACK_DAMAGE)
+            self.attack_timer = settings.MONSTER_ATTACK_COOLDOWN
+
     def draw(self, surface):
         """Draw the monster as a round green creature with glowing eyes."""
         centre = (round(self.x + self.size / 2),
@@ -90,3 +96,6 @@ class Monster(Entity):
             eye = (centre[0] + side * eye_offset_x, centre[1] - eye_offset_y)
             pygame.draw.circle(surface, settings.MONSTER_EYE_COLOUR,
                                eye, eye_radius)
+
+        # A health bar floats above the monster once it has been hurt.
+        self.draw_health_bar(surface)

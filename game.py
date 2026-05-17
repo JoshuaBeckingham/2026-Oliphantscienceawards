@@ -52,6 +52,10 @@ class Game:
         self.monsters = []
         self._spawn_monster()
 
+        # The game ends when the heart is destroyed.
+        self.game_over = False
+        self.font = pygame.font.Font(None, 110)
+
     def _spawn_monster(self):
         """Create a monster at the spawn point and give it a path."""
         spawn = self.dungeon.monster_spawn_tile
@@ -96,9 +100,20 @@ class Game:
 
     def update(self, dt):
         """Move everything forward by one frame."""
-        self.hero.update(dt, self.dungeon)
+        # Once the game is over, nothing moves any more.
+        if self.game_over:
+            return
+
+        self.hero.update(dt, self.dungeon, self.monsters)
         for monster in self.monsters:
-            monster.update(dt, self.dungeon)
+            monster.update(dt, self.dungeon, self.heart)
+
+        # Forget any monsters the hero has killed.
+        self.monsters = [m for m in self.monsters if m.is_alive]
+
+        # If the heart's HP has run out, the game is over.
+        if not self.heart.is_alive:
+            self.game_over = True
 
     def draw(self):
         """Paint the whole screen for this frame."""
@@ -109,7 +124,19 @@ class Game:
         for monster in self.monsters:     # monsters marching in
             monster.draw(self.screen)
         self.hero.draw(self.screen)       # the knight on top of everything
+
+        if self.game_over:
+            self._draw_game_over()
+
         pygame.display.flip()   # show the finished picture
+
+    def _draw_game_over(self):
+        """Cover the screen with a big 'GAME OVER' message."""
+        text = self.font.render("GAME OVER", True, settings.GAME_OVER_COLOUR)
+        text_rect = text.get_rect(
+            center=(settings.SCREEN_WIDTH // 2, settings.SCREEN_HEIGHT // 2)
+        )
+        self.screen.blit(text, text_rect)
 
     def _draw_grid(self):
         """Draw faint lines so you can see the dungeon's tile grid."""

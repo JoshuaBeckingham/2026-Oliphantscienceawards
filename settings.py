@@ -58,3 +58,23 @@ MONSTER_MAX_HP = 30
 MONSTER_COLOUR = (110, 170, 70)       # goblin green
 MONSTER_DARK_COLOUR = (60, 100, 40)   # darker outline / shading
 MONSTER_EYE_COLOUR = (240, 240, 120)  # glowing eyes
+
+# --- Combat ---
+# The hero's sword swing (press Space).
+HERO_ATTACK_DAMAGE = 12
+HERO_ATTACK_RANGE = 72         # pixels — how far the swing reaches
+HERO_ATTACK_COOLDOWN = 0.35    # seconds you must wait between swings
+HERO_SWING_TIME = 0.12         # how long the swing flash stays on screen
+HERO_SWING_COLOUR = (255, 255, 200, 90)   # translucent flash (R, G, B, alpha)
+
+# How hard a monster hits the heart once it arrives.
+MONSTER_ATTACK_DAMAGE = 20
+MONSTER_ATTACK_COOLDOWN = 1.0  # seconds between the monster's hits
+
+# Health bars floating above damaged monsters and the heart.
+HP_BAR_HEIGHT = 6
+HP_BAR_BACK_COLOUR = (60, 20, 20)     # empty part of the bar
+HP_BAR_FILL_COLOUR = (70, 200, 80)    # remaining health
+
+# The "GAME OVER" message shown when the heart is destroyed.
+GAME_OVER_COLOUR = (235, 60, 60)
