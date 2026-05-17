@@ -246,16 +246,19 @@ class Game:
         return self._can_build(tile_x, tile_y, self._selected_cost())
 
     def _left_click(self, mouse_pos):
-        """Left-click during build: upgrade a tower, or build something."""
+        """Left-click during build: upgrade a tower/trap, or build something."""
         if self.phase != settings.PHASE_BUILD:
             return
         tile_x = mouse_pos[0] // settings.TILE_SIZE
         tile_y = mouse_pos[1] // settings.TILE_SIZE
 
         tower = self.tower_at(tile_x, tile_y)
+        trap = self.trap_at(tile_x, tile_y)
         if tower is not None:
-            self._try_upgrade_tower(tower)
-        elif self.trap_at(tile_x, tile_y) is None:
+            self._try_upgrade(tower)
+        elif trap is not None:
+            self._try_upgrade(trap)
+        else:
             self._try_build(tile_x, tile_y)
 
     def _try_build(self, tile_x, tile_y):
@@ -269,12 +272,16 @@ class Game:
         else:
             self.towers.append(ArrowTower(tile_x, tile_y))
 
-    def _try_upgrade_tower(self, tower):
-        """Upgrade a tower one level, if it can be — and can be afforded."""
-        if not tower.can_upgrade:
+    def _try_upgrade(self, buildable):
+        """Upgrade a tower or trap one level, if it can be and can be afforded.
+
+        Works for both: a tower and a trap each have can_upgrade,
+        upgrade_cost and upgrade().
+        """
+        if not buildable.can_upgrade:
             return
-        if self.economy.spend(tower.upgrade_cost):
-            tower.upgrade()
+        if self.economy.spend(buildable.upgrade_cost):
+            buildable.upgrade()
 
     def _try_sell(self, mouse_pos):
         """Right-click: sell the tower or trap under the mouse."""

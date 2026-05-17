@@ -82,8 +82,13 @@ class HUD:
                         f"({tower.upgrade_cost}g),  right-click: sell")
             return f"Tower level {tower.level} (max)  -  right-click: sell"
 
-        if game.trap_at(tile_x, tile_y) is not None:
-            return "Spike Trap  -  right-click: sell"
+        trap = game.trap_at(tile_x, tile_y)
+        if trap is not None:
+            if trap.can_upgrade:
+                return (f"Spike Trap level {trap.level}  -  left-click: "
+                        f"upgrade ({trap.upgrade_cost}g),  right-click: sell")
+            return (f"Spike Trap level {trap.level} (max)  -  "
+                    f"right-click: sell")
         return None
 
     def _text(self, surface, text, position, highlight=False):

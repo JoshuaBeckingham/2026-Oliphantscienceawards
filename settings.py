@@ -151,9 +151,15 @@ PROJECTILE_COLOUR = (245, 230, 150)
 
 # --- Spike trap (a buildable) ---
 TRAP_COST = 30
-TRAP_DAMAGE = 10
-TRAP_COOLDOWN = 0.6            # seconds between the spikes striking
+TRAP_DAMAGE = 10               # damage of a level-1 trap
+TRAP_COOLDOWN = 0.6            # seconds between strikes for a level-1 trap
 TRAP_FLASH_TIME = 0.15         # how long the spikes look "struck"
+
+# Upgrading a trap (left-click an existing trap):
+TRAP_MAX_LEVEL = 3
+TRAP_UPGRADE_COST = 25         # cost = TRAP_UPGRADE_COST * the trap's level
+TRAP_UPGRADE_DAMAGE = 6        # extra damage gained per level
+TRAP_UPGRADE_SPEED = 0.12      # seconds shaved off the cooldown per level
 TRAP_BASE_COLOUR = (66, 60, 56)           # the trap's recessed base
 TRAP_SPIKE_COLOUR = (180, 186, 196)       # the spikes at rest
 TRAP_SPIKE_FIRED_COLOUR = (240, 120, 90)  # the spikes the moment they strike
