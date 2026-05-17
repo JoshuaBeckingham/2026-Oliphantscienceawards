@@ -21,7 +21,7 @@ from world.dungeon import Dungeon
 from world import tile
 from systems.waves import WaveManager
 from systems.economy import Economy
-from systems.ui import HUD, SettingsMenu, GameOverScreen
+from systems.ui import HUD, SettingsMenu, GameOverScreen, TitleScreen
 from systems.highscore import load_high_score, save_high_score
 from systems.particles import ParticleSystem
 from systems.sounds import Sounds
@@ -45,13 +45,19 @@ class Game:
         self.hud = HUD()
         self.settings_menu = SettingsMenu()
         self.game_over_screen = GameOverScreen()
+        self.title_screen = TitleScreen()
         self.sounds = Sounds()
         self.show_grid = True
         self.show_ranges = True
         self.high_score = load_high_score()
 
-        # Set up the first game.
+        # Set up a game, but wait on the title screen until Play is clicked.
         self.new_game()
+        self.on_title = True
+
+    def start_playing(self):
+        """Leave the title screen and begin playing."""
+        self.on_title = False
 
     def new_game(self):
         """Start a fresh game — a new dungeon, hero, gold and waves."""
@@ -122,8 +128,8 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
-                elif self.paused or self.game_over:
-                    pass   # other keys do nothing while paused / game over
+                elif self.on_title or self.paused or self.game_over:
+                    pass   # other keys do nothing outside of active play
                 elif event.key == pygame.K_e:
                     # Open or close a door next to the hero.
                     self.dungeon.toggle_door_near(
@@ -140,20 +146,22 @@ class Game:
                     self.selected_buildable = "trap"
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    if self.game_over:
+                    if self.on_title:
+                        self.title_screen.handle_click(event.pos, self)
+                    elif self.game_over:
                         self.game_over_screen.handle_click(event.pos, self)
                     # The settings menu gets first look at every left click.
                     elif not self.settings_menu.handle_click(event.pos, self):
                         if not self.paused:
                             self._left_click(event.pos)
                 elif event.button == 3:
-                    if not self.game_over and not self.paused:
+                    if not (self.on_title or self.game_over or self.paused):
                         self._try_sell(event.pos)
 
     def update(self, dt):
         """Move everything forward by one frame."""
-        # Nothing moves while the game is paused or over.
-        if self.paused or self.game_over:
+        # Nothing moves on the title screen, while paused, or once over.
+        if self.on_title or self.paused or self.game_over:
             return
 
         # The hero can always move (and fight, during a wave).
@@ -366,6 +374,12 @@ class Game:
 
     def draw(self):
         """Paint the whole screen for this frame."""
+        # On the title screen, draw just that and stop.
+        if self.on_title:
+            self.title_screen.draw(self.screen, self)
+            pygame.display.flip()
+            return
+
         self.screen.fill(settings.FLOOR_COLOUR)
         self._draw_grid()
         self.dungeon.draw(self.screen)    # rocks and doors on top of the grid

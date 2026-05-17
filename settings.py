@@ -187,3 +187,7 @@ MENU_BORDER_COLOUR = (122, 124, 146)      # panel and button outlines
 MENU_BUTTON_COLOUR = (62, 62, 82)         # a button at rest
 MENU_BUTTON_HOVER_COLOUR = (94, 94, 122)  # a button under the mouse
 MENU_TEXT_COLOUR = (236, 236, 246)
+
+# --- Title screen ---
+TITLE_BG_COLOUR = (24, 22, 32)        # title screen background
+TITLE_COLOUR = (235, 200, 110)        # the game's name on the title screen

@@ -12,6 +12,7 @@ import math
 
 import pygame
 
+import assets
 import settings
 
 
@@ -293,6 +294,73 @@ class GameOverScreen:
 
         mouse_pos = pygame.mouse.get_pos()
         self._draw_button(surface, self.again_rect, "Play again", mouse_pos)
+        self._draw_button(surface, self.quit_rect, "Quit", mouse_pos)
+
+    def _draw_button(self, surface, rect, text, mouse_pos):
+        """Draw one button, brighter when the mouse is over it."""
+        if rect.collidepoint(mouse_pos):
+            colour = settings.MENU_BUTTON_HOVER_COLOUR
+        else:
+            colour = settings.MENU_BUTTON_COLOUR
+        pygame.draw.rect(surface, colour, rect, border_radius=8)
+        pygame.draw.rect(surface, settings.MENU_BORDER_COLOUR, rect, 2,
+                         border_radius=8)
+        label = self.button_font.render(text, True, settings.MENU_TEXT_COLOUR)
+        surface.blit(label, label.get_rect(center=rect.center))
+
+
+class TitleScreen:
+    """The screen shown when the game first opens, before playing."""
+
+    def __init__(self):
+        self.title_font = pygame.font.Font(None, 116)
+        self.text_font = pygame.font.Font(None, 40)
+        self.button_font = pygame.font.Font(None, 44)
+
+        # The knight sprite, large, as decoration.
+        self.knight = assets.load_sprite("knight.png", 230)
+
+        # Two buttons side by side near the bottom.
+        button_w, button_h, gap = 220, 64, 32
+        total = button_w * 2 + gap
+        button_x = (settings.SCREEN_WIDTH - total) // 2
+        button_y = 660
+        self.play_rect = pygame.Rect(button_x, button_y,
+                                     button_w, button_h)
+        self.quit_rect = pygame.Rect(button_x + button_w + gap, button_y,
+                                     button_w, button_h)
+
+    def handle_click(self, pos, game):
+        """React to a left-click on the title screen."""
+        if self.play_rect.collidepoint(pos):
+            game.start_playing()
+        elif self.quit_rect.collidepoint(pos):
+            game.running = False
+
+    def draw(self, surface, game):
+        """Draw the title screen — name, knight, best score and buttons."""
+        surface.fill(settings.TITLE_BG_COLOUR)
+        centre_x = settings.SCREEN_WIDTH // 2
+
+        title = self.title_font.render("DUNGEON DEFENDERS", True,
+                                       settings.TITLE_COLOUR)
+        surface.blit(title, title.get_rect(center=(centre_x, 110)))
+
+        surface.blit(self.knight,
+                     self.knight.get_rect(center=(centre_x, 350)))
+
+        best = self.text_font.render(
+            f"Best: {game.high_score} waves survived", True,
+            settings.HUD_TEXT_COLOUR)
+        surface.blit(best, best.get_rect(center=(centre_x, 525)))
+
+        controls = self.text_font.render(
+            "Arrow keys: move    Space: attack    "
+            "E: doors    Click: build", True, settings.HUD_TEXT_COLOUR)
+        surface.blit(controls, controls.get_rect(center=(centre_x, 580)))
+
+        mouse_pos = pygame.mouse.get_pos()
+        self._draw_button(surface, self.play_rect, "Play", mouse_pos)
         self._draw_button(surface, self.quit_rect, "Quit", mouse_pos)
 
     def _draw_button(self, surface, rect, text, mouse_pos):
