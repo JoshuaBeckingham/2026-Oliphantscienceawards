@@ -90,6 +90,7 @@ class Game:
 
         self.paused = False
         self.game_over = False
+        self.won = False         # True if the game ended in victory
         self.waves_cleared = 0   # the score: how many waves were survived
 
     def run(self):
@@ -155,9 +156,9 @@ class Game:
         elif self.phase == settings.PHASE_DEFENSE:
             self._update_defense(dt)
 
-        # If the heart's HP has run out, the game is over.
+        # If the heart's HP has run out, the game is lost.
         if not self.heart.is_alive:
-            self._end_game()
+            self._end_game(won=False)
 
     def _update_build(self, dt):
         """Count down the calm phase; start the wave when it runs out."""
@@ -203,6 +204,11 @@ class Game:
         """A wave was cleared: score it, reward it, return to BUILD."""
         self.waves_cleared += 1
 
+        # Surviving the final wave wins the game.
+        if self.waves_cleared >= settings.FINAL_WAVE:
+            self._end_game(won=True)
+            return
+
         reward = (settings.WAVE_GOLD_BASE
                   + self.wave_manager.wave_number * settings.WAVE_GOLD_PER_WAVE)
         self.economy.earn(reward)
@@ -215,9 +221,12 @@ class Game:
         # see the marker and build to meet it.
         self.wave_manager.choose_spawn_room()
 
-    def _end_game(self):
-        """The heart is destroyed: end the game and save a new high score."""
+    def _end_game(self, won):
+        """End the game — win or lose — and save a new high score."""
+        if self.game_over:
+            return   # the game has already ended
         self.game_over = True
+        self.won = won
         if self.waves_cleared > self.high_score:
             self.high_score = self.waves_cleared
             save_high_score(self.high_score)

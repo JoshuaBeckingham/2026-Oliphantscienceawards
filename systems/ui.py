@@ -264,8 +264,12 @@ class GameOverScreen:
 
         centre_x = self.panel_rect.centerx
 
-        title = self.title_font.render("GAME OVER", True,
-                                       settings.GAME_OVER_COLOUR)
+        # The title says YOU WIN! for a victory, GAME OVER for a loss.
+        if game.won:
+            title_text, title_colour = "YOU WIN!", settings.WIN_COLOUR
+        else:
+            title_text, title_colour = "GAME OVER", settings.GAME_OVER_COLOUR
+        title = self.title_font.render(title_text, True, title_colour)
         surface.blit(title, title.get_rect(
             center=(centre_x, self.panel_rect.top + 70)))
 
