@@ -73,7 +73,7 @@ ORC_FIRST_WAVE = 3                    # the wave orcs start appearing
 # Boss — a huge, slow, very tough monster that arrives on boss waves.
 BOSS_SIZE = 64
 BOSS_SPEED = 45
-BOSS_MAX_HP = 400
+BOSS_MAX_HP = 1200
 BOSS_COLOUR = (140, 62, 152)          # menacing purple
 BOSS_DARK_COLOUR = (80, 34, 90)
 BOSS_ATTACK_DAMAGE = 60               # a boss hits the heart very hard
