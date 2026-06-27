@@ -14,3 +14,6 @@ __pycache__/
 
 # The player's saved high score
 highscore.txt
+
+# Windows thumbnail cache
+Thumbs.db
