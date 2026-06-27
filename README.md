@@ -189,3 +189,11 @@ Bonus concepts that show up naturally:
 ## Status
 
 🛠️ **In development** — Steps 1–3 complete (window, procedural dungeon, doors). Step 4 next: a monster that pathfinds to the heart.
+
+---
+
+## Acknowledgements
+
+This project was made by **Joshua Beckingham**.
+
+I used **Claude** (an AI coding assistant from Anthropic, via Claude Code) as a helper while building the game — to explain ideas, suggest code, and help me find and fix bugs. I read and understood the code that went into the game, and I made the decisions about how it should work. Claude is credited as a co-author on the Git commits to show where it helped.
